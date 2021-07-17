@@ -20,8 +20,12 @@ RUN set -x \
   imagemagick \
   imagemagick-libs \
   imagemagick-dev \
-  postgresql-dev \
-  && ln -sf /dev/stdout /var/log/nginx/access.log \
+  postgresql-dev
+
+RUN touch /var/log/nginx/access.log \
+  && touch /var/log/nginx/error.log
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
 RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxml2-dev icu-dev curl-dev
