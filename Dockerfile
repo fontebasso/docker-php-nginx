@@ -4,8 +4,12 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 RUN apk update
 
+RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxml2-dev icu-dev curl-dev
+
+RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
+
 RUN set -x \
-  && apk add git \
+  && apk add --no-cache git \
   libxml2-dev \
   libressl-dev \
   oniguruma-dev \
@@ -27,10 +31,6 @@ RUN touch /var/log/nginx/access.log \
 
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
-
-RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxml2-dev icu-dev curl-dev
-
-RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
 
 RUN docker-php-ext-install \
   phar \
