@@ -11,7 +11,7 @@ RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
 RUN set -x \
   && apk add --no-cache git \
   libxml2-dev \
-  libressl-dev \
+  openssl-dev \
   oniguruma-dev \
   bzip2-dev \
   nginx \
