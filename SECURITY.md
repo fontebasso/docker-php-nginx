@@ -7,7 +7,7 @@ effort to acknowledge your contributions.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 7.4   | :white_check_mark: |
+| 1+   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
