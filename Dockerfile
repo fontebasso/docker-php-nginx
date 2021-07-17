@@ -1,9 +1,11 @@
 FROM php:7.4-fpm-alpine
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
 RUN apk update
-ARG DEPS="\
-  git \
+
+RUN set -x \
+  && apk add git \
   libxml2-dev \
   libressl-dev \
   oniguruma-dev \
@@ -19,13 +21,13 @@ ARG DEPS="\
   imagemagick-libs \
   imagemagick-dev \
   postgresql-dev \
-  "
-RUN set -x \
-  && apk add $DEPS \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
+
 RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxml2-dev icu-dev curl-dev
+
 RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
+
 RUN docker-php-ext-install \
   phar \
   bcmath \
