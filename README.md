@@ -15,7 +15,7 @@ Use this docker image as a base to run your project, tested on Laravel 8 project
 #### 1. Your Dockerfile
 
 ```Dockerfile
-FROM fontebasso/php-nginx:7.4
+FROM fontebasso/php-nginx:[version]
 COPY /src /app
 RUN chown -R 82:82 /app
 ```
