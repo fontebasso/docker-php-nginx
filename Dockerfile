@@ -1,56 +1,66 @@
-FROM php:8.0-fpm-alpine3.13
+ARG NAME_IMAGE_BASE='php'
+ARG NAME_IMAGE_TAG='8.0-fpm-alpine3.13'
 
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-ADD ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-x-01-custom-params.ini
+FROM ${NAME_IMAGE_BASE}:${NAME_IMAGE_TAG}
 
-RUN apk update
+ARG BUILD_ID="unknown"
+ARG VERSION_OS='3.13'
+ARG VERSION_PHP='8.0'
 
-RUN set -x \
-  && apk add git \
-  libxml2-dev \
-  libressl-dev \
-  oniguruma-dev \
-  bzip2-dev \
-  nginx \
-  nginx-mod-http-headers-more \
-  curl \
-  curl-dev \
-  ca-certificates \
-  runit \
-  ghostscript \
-  imagemagick \
-  imagemagick-libs \
-  imagemagick-dev \
-  postgresql-dev \
-  && ln -sf /dev/stdout /var/log/nginx/access.log \
-  && ln -sf /dev/stderr /var/log/nginx/error.log
+LABEL \
+    ALPINE="$VERSION_OS" \
+    BUILD_ID="$BUILD_ID" \
+    MAINTAINER='Samuel Fontebasso <samuel.txd@gmail.com>' \
+    PHP_VERSION="$VERSION_PHP"
 
-RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxml2-dev icu-dev curl-dev
-
-RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
-
-RUN docker-php-ext-install \
-  bcmath \
-  bz2 \
-  calendar \
-  exif \
-  opcache \
-  pdo_mysql \
-  pdo_pgsql \
-  shmop \
-  sockets \
-  sysvmsg \
-  sysvsem \
-  sysvshm \
-  zip
-
-RUN set -xe \
-  && pecl install imagick \
-  && docker-php-ext-enable --ini-name 20-imagick.ini imagick
-
-RUN mkdir /run/nginx
+RUN \
+    set -xe \
+    && apk update \
+    && apk add git \
+        bzip2-dev \
+        ca-certificates \
+        curl \
+        curl-dev \
+        ghostscript \
+        icu-dev \
+        imagemagick \
+        imagemagick-dev \
+        imagemagick-libs \
+        libjpeg-turbo-dev \
+        libmcrypt-dev \
+        libpng-dev \
+        libressl-dev \
+        libxml2-dev \
+        libzip-dev \
+        nginx \
+        nginx-mod-http-headers-more \
+        oniguruma-dev \
+        postgresql-dev \
+        runit \
+    && apk add --update --virtual build-dependencies build-base gcc wget autoconf \
+    && docker-php-ext-install \
+        bcmath \
+        bz2 \
+        calendar \
+        exif \
+        opcache \
+        pdo_mysql \
+        pdo_pgsql \
+        shmop \
+        sockets \
+        sysvmsg \
+        sysvsem \
+        sysvshm \
+        zip \
+    && pecl install imagick-3.5.1 \
+    && docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+    && mkdir /run/nginx
 
 COPY ./src /
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+ADD ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
 
 WORKDIR /app
 
@@ -60,6 +70,6 @@ RUN chmod +x \
   /etc/service/nginx/run \
   /etc/service/php-fpm/run
 
-EXPOSE 80
+EXPOSE 80/tcp
 
 CMD ["/sbin/runit-wrapper"]
