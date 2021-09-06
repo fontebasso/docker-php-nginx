@@ -1,6 +1,7 @@
-FROM php:7.4-fpm-alpine3.13
+FROM php:8.0-fpm-alpine3.13
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+ADD ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-x-01-custom-params.ini
 
 RUN apk update
 
@@ -29,32 +30,19 @@ RUN apk add --update libzip-dev libmcrypt-dev libpng-dev libjpeg-turbo-dev libxm
 RUN apk add --update --virtual build-dependencies build-base gcc wget autoconf
 
 RUN docker-php-ext-install \
-  phar \
   bcmath \
+  bz2 \
   calendar \
-  mbstring \
   exif \
-  ftp \
-  zip \
-  sysvsem \
-  sysvshm \
-  sysvmsg \
+  opcache \
+  pdo_mysql \
+  pdo_pgsql \
   shmop \
   sockets \
-  bz2 \
-  curl \
-  simplexml \
-  xml \
-  opcache \
-  tokenizer \
-  ctype \
-  session \
-  fileinfo \
-  iconv \
-  json \
-  posix \
-  pdo_mysql \
-  pdo_pgsql
+  sysvmsg \
+  sysvsem \
+  sysvshm \
+  zip
 
 RUN set -xe \
   && pecl install imagick \
