@@ -45,7 +45,7 @@ RUN docker-php-ext-install \
   zip
 
 RUN set -xe \
-  && pecl install imagick \
+  && pecl install imagick-3.5.1 \
   && docker-php-ext-enable --ini-name 20-imagick.ini imagick
 
 RUN mkdir /run/nginx
@@ -60,6 +60,6 @@ RUN chmod +x \
   /etc/service/nginx/run \
   /etc/service/php-fpm/run
 
-EXPOSE 80
+EXPOSE 80/tcp
 
 CMD ["/sbin/runit-wrapper"]
