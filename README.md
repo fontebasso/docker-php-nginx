@@ -1,10 +1,15 @@
 # fontebasso/php-nginx
 
-This project is a image docker for run PHP with NGINX and extras bonus.
+[![Docker Build](https://github.com/fontebasso/docker-php-nginx/workflows/docker/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions?query=workflow%3Adocker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/fontebasso/php-nginx)](https://hub.docker.com/r/fontebasso/php-nginx)
+[![GitHub Repo](https://img.shields.io/badge/github-repo-yellowgreen)](https://github.com/fontebasso/docker-php-nginx)
+[![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 
-The goal is to finalize an image ready to run in production, suggestions for improvements and corrections are very welcome, see [how to contribute](CONTRIBUTING.md).
+This project is container image docker for run PHP with NGINX.
 
- However, if you identify a security breach, please report it as soon as possible under guidelines outlined in our [SECURITY POLICY](SECURITY.md).
+This image is ready to run in production, suggestions for improvements and corrections are very welcome, see [how to contribute](CONTRIBUTING.md).
+
+However, if you identify a security breach, please report it as soon as possible under guidelines outlined in our [security policy](SECURITY.md).
 
 ## Getting Started
 
@@ -54,7 +59,8 @@ To run this image, only the Docker Engine is needed.
 * php
 * nginx
 * imagemagick
-* others+
+
+See [Dockerfile](Dockerfile) for details of the extensions, libs and configurations.
 
 ## Find Us
 
@@ -66,10 +72,10 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Authors
 
-* **Samuel Fontebasso** - *Initial work* - [fontebasso](https://github.com/fontebasso)
+* **Samuel Fontebasso** - [fontebasso](https://github.com/fontebasso)
 
 See also the list of [contributors](https://github.com/fontebasso/docker-php-nginx/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The MIT License, see the [LICENSE](LICENSE) file for details.
