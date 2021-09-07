@@ -4,12 +4,14 @@ ARG NAME_IMAGE_TAG='8.0-fpm-alpine3.13'
 FROM ${NAME_IMAGE_BASE}:${NAME_IMAGE_TAG}
 
 ARG BUILD_ID="unknown"
+ARG COMMIT_ID="unknown"
 ARG VERSION_OS='3.13'
 ARG VERSION_PHP='8.0'
 
 LABEL \
     ALPINE="$VERSION_OS" \
     BUILD_ID="$BUILD_ID" \
+    COMMIT_ID="$COMMIT_ID" \
     MAINTAINER='Samuel Fontebasso <samuel.txd@gmail.com>' \
     PHP_VERSION="$VERSION_PHP"
 
