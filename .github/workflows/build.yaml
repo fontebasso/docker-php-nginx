@@ -32,5 +32,5 @@ jobs:
             --build-arg COMMIT_ID=$(git rev-parse --short "$GITHUB_SHA") \
             --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:${{ env.VERSION }} \
             --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}:latest \
-            --platform linux/amd64,linux/arm64
+            --platform linux/amd64,linux/arm64 \
             --push
