@@ -43,5 +43,5 @@ jobs:
           provider: dockerhub
           target: fontebasso/php-nginx
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           readme: README.md
