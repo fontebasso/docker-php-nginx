@@ -18,42 +18,42 @@ LABEL \
 RUN \
     set -xe \
     && apk update \
-    && apk add git \
-        bzip2-dev \
-        ca-certificates \
-        curl \
-        curl-dev \
-        ghostscript \
-        icu-dev \
-        imagemagick \
-        imagemagick-dev \
-        imagemagick-libs \
-        libjpeg-turbo-dev \
-        libmcrypt-dev \
-        libpng-dev \
-        libressl-dev \
-        libxml2-dev \
-        libzip-dev \
-        nginx \
-        nginx-mod-http-headers-more \
-        oniguruma-dev \
-        postgresql-dev \
-        runit \
+    && apk add --upgrade git \
+    bzip2-dev \
+    ca-certificates \
+    curl \
+    curl-dev \
+    ghostscript \
+    icu-dev \
+    imagemagick \
+    imagemagick-dev \
+    imagemagick-libs \
+    libjpeg-turbo-dev \
+    libmcrypt-dev \
+    libpng-dev \
+    libressl-dev \
+    libxml2-dev \
+    libzip-dev \
+    nginx \
+    nginx-mod-http-headers-more \
+    oniguruma-dev \
+    postgresql-dev \
+    runit \
     && apk add --update --virtual build-dependencies build-base gcc wget autoconf \
     && docker-php-ext-install \
-        bcmath \
-        bz2 \
-        calendar \
-        exif \
-        opcache \
-        pdo_mysql \
-        pdo_pgsql \
-        shmop \
-        sockets \
-        sysvmsg \
-        sysvsem \
-        sysvshm \
-        zip \
+    bcmath \
+    bz2 \
+    calendar \
+    exif \
+    opcache \
+    pdo_mysql \
+    pdo_pgsql \
+    shmop \
+    sockets \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    zip \
     && pecl install imagick-3.5.1 \
     && docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
@@ -67,10 +67,10 @@ ADD ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-par
 WORKDIR /app
 
 RUN chmod +x \
-  /sbin/runit-wrapper \
-  /sbin/runsvdir-start \
-  /etc/service/nginx/run \
-  /etc/service/php-fpm/run
+    /sbin/runit-wrapper \
+    /sbin/runsvdir-start \
+    /etc/service/nginx/run \
+    /etc/service/php-fpm/run
 
 EXPOSE 80/tcp
 
