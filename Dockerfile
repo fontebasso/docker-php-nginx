@@ -57,8 +57,7 @@ RUN \
     && pecl install imagick-3.5.1 \
     && docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log \
-    && mkdir /run/nginx
+    && ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY ./src /
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
