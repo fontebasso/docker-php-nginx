@@ -53,22 +53,22 @@ RUN set -ex; \
         sysvsem \
         sysvshm \
         zip; \
-    pecl install imagick-3.5.1; \
+    pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
-    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
-    chmod +x \
-       /sbin/runit-wrapper \
-       /sbin/runsvdir-start \
-       /etc/service/nginx/run \
-       /etc/service/php-fpm/run
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini";
 
 COPY ./src /
 COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
 
-WORKDIR /app
+RUN chmod +x \
+   /sbin/runit-wrapper \
+   /sbin/runsvdir-start \
+   /etc/service/nginx/run \
+   /etc/service/php-fpm/run \
 
+WORKDIR /app
 EXPOSE 80/tcp
 
 CMD ["/sbin/runit-wrapper"]
