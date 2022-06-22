@@ -66,7 +66,7 @@ RUN chmod +x \
    /sbin/runit-wrapper \
    /sbin/runsvdir-start \
    /etc/service/nginx/run \
-   /etc/service/php-fpm/run \
+   /etc/service/php-fpm/run
 
 WORKDIR /app
 EXPOSE 80/tcp
