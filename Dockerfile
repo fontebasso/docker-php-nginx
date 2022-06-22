@@ -15,61 +15,59 @@ LABEL \
     MAINTAINER='Samuel Fontebasso <samuel.txd@gmail.com>' \
     PHP_VERSION="$VERSION_PHP"
 
-RUN \
-    set -xe \
-    && apk update \
-    && apk add --upgrade git \
-    bzip2-dev \
-    ca-certificates \
-    curl \
-    curl-dev \
-    ghostscript \
-    icu-dev \
-    imagemagick \
-    imagemagick-dev \
-    imagemagick-libs \
-    libjpeg-turbo-dev \
-    libmcrypt-dev \
-    libpng-dev \
-    libressl-dev \
-    libxml2-dev \
-    libzip-dev \
-    nginx \
-    nginx-mod-http-headers-more \
-    oniguruma-dev \
-    postgresql-dev \
-    runit \
-    && apk add --update --virtual build-dependencies build-base gcc wget autoconf \
-    && docker-php-ext-install \
-    bcmath \
-    bz2 \
-    calendar \
-    exif \
-    opcache \
-    pdo_mysql \
-    pdo_pgsql \
-    shmop \
-    sockets \
-    sysvmsg \
-    sysvsem \
-    sysvshm \
-    zip \
-    && pecl install imagick-3.5.1 \
-    && docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick \
-    && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
+RUN set -ex; \
+    \
+    apk add --no-cache --upgrade git \
+        bzip2-dev \
+        ca-certificates \
+        curl \
+        curl-dev \
+        ghostscript \
+        icu-dev \
+        imagemagick \
+        imagemagick-dev \
+        imagemagick-libs \
+        libjpeg-turbo-dev \
+        libmcrypt-dev \
+        libpng-dev \
+        libressl-dev \
+        libxml2-dev \
+        libzip-dev \
+        nginx \
+        nginx-mod-http-headers-more \
+        oniguruma-dev \
+        postgresql-dev \
+        runit; \
+    apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf; \
+    docker-php-ext-install \
+        bcmath \
+        bz2 \
+        calendar \
+        exif \
+        opcache \
+        pdo_mysql \
+        pdo_pgsql \
+        shmop \
+        sockets \
+        sysvmsg \
+        sysvsem \
+        sysvshm \
+        zip; \
+    pecl install imagick-3.5.1; \
+    docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
+    ln -sf /dev/stdout /var/log/nginx/access.log; \
+    ln -sf /dev/stderr /var/log/nginx/error.log; \
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
+    chmod +x \
+       /sbin/runit-wrapper \
+       /sbin/runsvdir-start \
+       /etc/service/nginx/run \
+       /etc/service/php-fpm/run
 
 COPY ./src /
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-ADD ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
+COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
 
 WORKDIR /app
-
-RUN chmod +x \
-    /sbin/runit-wrapper \
-    /sbin/runsvdir-start \
-    /etc/service/nginx/run \
-    /etc/service/php-fpm/run
 
 EXPOSE 80/tcp
 
