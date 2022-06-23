@@ -46,7 +46,7 @@ After `run`, open in your browser `http://localhost:8080` and enjoy!
 To run this image, only the Docker Engine is needed.
 
 * [Linux](https://docs.docker.com/linux/started/)
-* [OS X](https://docs.docker.com/mac/started/)
+* [MacOS](https://docs.docker.com/mac/started/)
 * [Windows](https://docs.docker.com/windows/started)
 
 #### Volumes
@@ -56,11 +56,11 @@ To run this image, only the Docker Engine is needed.
 
 ## Built With
 
-* php
-* nginx
-* imagemagick
+* PHP 8.1
+* Nginx
+* Imagemagick
 
-See [Dockerfile](Dockerfile) for details of the extensions, libs and configurations.
+See [Dockerfile](https://github.com/fontebasso/docker-php-nginx/blob/main/Dockerfile) for details of the extensions, libs and configurations.
 
 ## Find Us
 
@@ -68,7 +68,7 @@ See [Dockerfile](Dockerfile) for details of the extensions, libs and configurati
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/fontebasso/docker-php-nginx/blob/main/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Authors
 
@@ -78,4 +78,4 @@ See also the list of [contributors](https://github.com/fontebasso/docker-php-ngi
 
 ## License
 
-The MIT License, see the [LICENSE](LICENSE) file for details.
+The MIT License, see the [LICENSE](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE) file for details.
