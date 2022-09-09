@@ -38,7 +38,7 @@ RUN set -ex; \
         oniguruma-dev \
         postgresql-dev \
         runit; \
-    apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf; \
+    apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
     docker-php-ext-install \
         bcmath \
         bz2 \
@@ -55,8 +55,11 @@ RUN set -ex; \
         zip; \
     pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
+    echo "#include <unistd.h>" > /usr/include/sys/unistd.h; \
     pecl install grpc; \
-        docker-php-ext-enable --ini-name docker-php-ext-x-05-grpc.ini grpc; \
+    docker-php-ext-enable --ini-name docker-php-ext-x-05-grpc.ini grpc; \
+    pecl install protobuf; \
+    docker-php-ext-enable --ini-name docker-php-ext-x-06-protobuf.ini protobuf; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini";
