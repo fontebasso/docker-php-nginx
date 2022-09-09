@@ -55,6 +55,8 @@ RUN set -ex; \
         zip; \
     pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
+    pecl install grpc; \
+        docker-php-ext-enable --ini-name docker-php-ext-x-05-imagick.ini imagick; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini";
