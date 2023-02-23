@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron: '*/10 * * * *' # every 10 minutes
+    - cron: '@daily'
   push:
     branches:
       - main

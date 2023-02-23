@@ -62,7 +62,8 @@ RUN set -ex; \
     docker-php-ext-enable --ini-name docker-php-ext-x-06-protobuf.ini protobuf; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
-    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini";
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
+    apk upgrade tar;
 
 COPY ./src /
 COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
