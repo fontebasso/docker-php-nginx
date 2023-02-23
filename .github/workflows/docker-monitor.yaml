@@ -1,9 +1,6 @@
 on:
   schedule:
-    - cron: '@daily'
-  push:
-    branches:
-      - main
+    - cron: '0 0 * * *'
 jobs:
   publish:
     runs-on: ubuntu-latest
