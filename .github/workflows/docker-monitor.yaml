@@ -15,5 +15,5 @@ jobs:
         uses: fontebasso/docker-hub-upstream@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          image: '_/alpine'
+          image: 'library/alpine'
           tag: '3.16'
