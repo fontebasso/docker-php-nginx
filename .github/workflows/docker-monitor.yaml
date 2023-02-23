@@ -14,6 +14,6 @@ jobs:
       - name: Update Docker image
         uses: fontebasso/docker-hub-upstream@main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           image: 'library/alpine'
           tag: '3.16'
