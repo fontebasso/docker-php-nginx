@@ -1,0 +1,19 @@
+on:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+  push:
+    branches:
+      - main
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update Docker image
+        uses: docker-hub-upstream@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image: '_/alpine'
+          tag: '3.16'
