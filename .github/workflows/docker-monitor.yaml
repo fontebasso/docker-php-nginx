@@ -12,5 +12,5 @@ jobs:
         uses: fontebasso/docker-hub-upstream@main
         with:
           token: ${{ secrets.TOKEN }}
-          image: 'library/alpine'
-          tag: '3.16'
+          image: 'library/php'
+          tag: '8.1-fpm-alpine3.16'
