@@ -46,7 +46,6 @@ RUN set -ex; \
         exif \
         opcache \
         pdo_mysql \
-        pdo_pgsql \
         shmop \
         sockets \
         sysvmsg \
