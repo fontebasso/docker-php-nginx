@@ -1,12 +1,12 @@
 ARG NAME_IMAGE_BASE='php'
-ARG NAME_IMAGE_TAG='8.1-fpm-alpine3.16'
+ARG NAME_IMAGE_TAG='8.2-fpm-alpine3.16'
 
 FROM ${NAME_IMAGE_BASE}:${NAME_IMAGE_TAG}
 
 ARG BUILD_ID="unknown"
 ARG COMMIT_ID="unknown"
 ARG VERSION_OS='3.16'
-ARG VERSION_PHP='8.1'
+ARG VERSION_PHP='8.2'
 
 LABEL \
     ALPINE="$VERSION_OS" \
@@ -54,11 +54,6 @@ RUN set -ex; \
         zip; \
     pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
-    echo "#include <unistd.h>" > /usr/include/sys/unistd.h; \
-    pecl install grpc; \
-    docker-php-ext-enable --ini-name docker-php-ext-x-05-grpc.ini grpc; \
-    pecl install protobuf; \
-    docker-php-ext-enable --ini-name docker-php-ext-x-06-protobuf.ini protobuf; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
