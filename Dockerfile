@@ -44,6 +44,7 @@ RUN set -ex; \
         bz2 \
         calendar \
         exif \
+        gd \
         opcache \
         pdo_mysql \
         shmop \
