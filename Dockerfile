@@ -58,7 +58,7 @@ RUN set -ex; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
-    apk upgrade;
+    apk upgrade --no-cache;
 
 COPY ./src /
 COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
