@@ -3,17 +3,13 @@ ARG NAME_IMAGE_TAG='8.2-fpm-alpine3.16'
 
 FROM ${NAME_IMAGE_BASE}:${NAME_IMAGE_TAG}
 
-ARG BUILD_ID="unknown"
-ARG COMMIT_ID="unknown"
 ARG VERSION_OS='3.16'
 ARG VERSION_PHP='8.2'
 
 LABEL \
     ALPINE="$VERSION_OS" \
-    BUILD_ID="$BUILD_ID" \
-    COMMIT_ID="$COMMIT_ID" \
-    MAINTAINER='Samuel Fontebasso <samuel.txd@gmail.com>' \
-    PHP_VERSION="$VERSION_PHP"
+    PHP_VERSION="$VERSION_PHP" \
+    MAINTAINER='Samuel Fontebasso <samuel.txd@gmail.com>'
 
 RUN set -ex; \
     \
@@ -22,11 +18,13 @@ RUN set -ex; \
         ca-certificates \
         curl \
         curl-dev \
+        freetype-dev \
         ghostscript \
         icu-dev \
         imagemagick \
         imagemagick-dev \
         imagemagick-libs \
+        jpeg-dev \
         libjpeg-turbo-dev \
         libmcrypt-dev \
         libpng-dev \
@@ -39,6 +37,9 @@ RUN set -ex; \
         postgresql-dev \
         runit; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
+    docker-php-ext-configure gd \
+       --with-freetype \
+       --with-jpeg; \
     docker-php-ext-install \
         bcmath \
         bz2 \
