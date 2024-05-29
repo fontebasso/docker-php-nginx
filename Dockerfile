@@ -37,7 +37,8 @@ RUN set -ex; \
         postgresql-dev \
         runit; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
-    docker-php-ext-configure gd \
+    docker-php-ext-configure gd pcntl \
+       --enable-pcntl \
        --with-freetype \
        --with-jpeg; \
     docker-php-ext-install \
@@ -53,6 +54,7 @@ RUN set -ex; \
         sysvmsg \
         sysvsem \
         sysvshm \
+        pcntl \
         zip; \
     pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
