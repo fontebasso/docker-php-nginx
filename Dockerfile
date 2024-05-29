@@ -37,10 +37,11 @@ RUN set -ex; \
         postgresql-dev \
         runit; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
-    docker-php-ext-configure gd pcntl \
-       --enable-pcntl \
-       --with-freetype \
-       --with-jpeg; \
+    docker-php-ext-configure gd \
+      --with-freetype \
+      --with-jpeg; \
+    docker-php-ext-configure pcntl \
+      --enable-pcntl; \
     docker-php-ext-install \
         bcmath \
         bz2 \
