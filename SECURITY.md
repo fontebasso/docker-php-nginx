@@ -6,9 +6,12 @@ effort to acknowledge your contributions.
 ## Supported Versions
 
 | Version | Supported          |
-| ------- | ------------------ |
-| 1+   | :x: |
-| 2+   | :heavy_check_mark: |
+|---------| ------------------ |
+| 1+      | :x: |
+| 2+      | :x: |
+| 3+      | :x: |
+| 4+      | :x: |
+| 5+      | :heavy_check_mark: |
 
 ## Reporting a Vulnerability
 

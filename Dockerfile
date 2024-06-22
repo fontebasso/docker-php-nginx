@@ -16,8 +16,6 @@ RUN set -ex; \
     apk add --no-cache --upgrade git \
         bzip2-dev \
         ca-certificates \
-        curl \
-        curl-dev \
         freetype-dev \
         ghostscript \
         icu-dev \
@@ -61,17 +59,27 @@ RUN set -ex; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
     ln -sf /dev/stderr /var/log/nginx/error.log; \
-    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
-    apk upgrade --no-cache;
+    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini";
 
 COPY ./src /
 COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
+
+RUN touch /env  \
+    && chown -R www-data:www-data /env \
+    && chown -R www-data:www-data /app \
+    && chown -R www-data:www-data /var/log/nginx \
+    && chown -R www-data:www-data /etc/service \
+    && chown -R www-data:www-data /var/run \
+    && chown -R www-data:www-data /var/lib/nginx \
+    && chown -R www-data:www-data /run/nginx
 
 RUN chmod +x \
    /sbin/runit-wrapper \
    /sbin/runsvdir-start \
    /etc/service/nginx/run \
    /etc/service/php-fpm/run
+
+USER www-data
 
 WORKDIR /app
 EXPOSE 80/tcp

@@ -5,77 +5,89 @@
 [![GitHub Repo](https://img.shields.io/badge/github-repo-yellowgreen)](https://github.com/fontebasso/docker-php-nginx)
 [![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 
-This project is container image docker for run PHP with NGINX.
+This repository contains a Docker image for running high-performance PHP web applications. It is optimized for speed, efficiency, and includes a comprehensive set of tools and libraries commonly used in web development.
 
-This image is ready to run in production, suggestions for improvements and corrections are very welcome, see [how to contribute](CONTRIBUTING.md).
+> This image is ready to run in production, suggestions for improvements and corrections are very welcome, see [how to contribute](CONTRIBUTING.md).
 
-However, if you identify a security breach, please report it as soon as possible under guidelines outlined in our [security policy](SECURITY.md).
+> If you identify a security breach, please report it as soon as possible under guidelines outlined in our [security policy](SECURITY.md).
+
+## Features
+
+- **PHP 8.2**: The image uses PHP 8.2, which is optimized for performance and includes numerous features and improvements.
+- **Alpine Linux 3.16**: A minimal Docker image based on Alpine Linux for security and reduced image size.
+- **Nginx**: Fast and reliable web server.
+- **Essential PHP Extensions**: Including `bcmath`, `bz2`, `calendar`, `exif`, `gd`, `opcache`, `pdo_mysql`, `shmop`, `sockets`, `sysvmsg`, `sysvsem`, `sysvshm`, `pcntl`, `zip`, and `imagick`.
+- **Pre-installed Libraries**: `git`, `bzip2-dev`, `freetype-dev`, `icu-dev`, `imagemagick`, `jpeg-dev`, `libpng-dev`, `libressl-dev`, `libxml2-dev`, `libzip-dev`, `oniguruma-dev` and more.
+- **Runit**: Lightweight and easy-to-use init system.
 
 ## Getting Started
 
-Use this docker image as a base to run your project, tested on Laravel 8 projects, map your source code to the `/app` directory and build your image as suggested below:
+### Prerequisites
 
-### Step-to-step
+- Docker installed on your machine.
+- Docker Hub account for pulling the image.
 
-#### 1. Your Dockerfile
+### Pulling the Image
 
-```Dockerfile
-FROM fontebasso/php-nginx:[version]
-COPY /src /app
-RUN chown -R 82:82 /app
+To pull the image from Docker Hub, run:
+
+```bash
+docker pull fontebasso/php-nginx:latest
+```
+### Running the Container
+
+To run a container using this image, execute:
+
+```bash
+docker run -d -p 8080:80 fontebasso/php-nginx:latest
 ```
 
-> **Important note:**
-  we run the command chown -R 82:82 /app to change the user and group owning the files to `www-data`, this avoids permissions issues when running your code.
+This command will start a container and map port 8080 on your local machine to port 80 on the container.
 
-#### 2. Build a image
+### Custom Configuration
 
-```ssh
-docker build -t your-app:latest .
+You can customize the PHP configuration by editing the custom_params.ini file and copying it to the appropriate directory:
+
+```dockerfile
+COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-02-custom-params.ini
 ```
 
-#### 3. Run application
+### Directory Structure
 
-```ssh
-docker run -p 8080:80 -t your-app:latest
+- `/app`: The application code.
+- `/env`: Environment variables directory.
+- `/var/log/nginx`: Nginx logs.
+- `/etc/service`: Service definitions for `runit`.
+
+## Development
+
+To build the Docker image locally, clone this repository and run:
+
+```bash
+git clone https://github.com/fontebasso/docker-php-nginx.git
+cd docker-php-nginx
+docker build -t fontebasso/php-nginx:latest .
 ```
-After `run`, open in your browser `http://localhost:8080` and enjoy!
 
-### Prerequisities
+### Building for Multiple Architectures
 
-To run this image, only the Docker Engine is needed.
+This repository is configured to build for multiple architectures using GitHub Actions. Supported architectures:
 
-* [Linux](https://docs.docker.com/linux/started/)
-* [MacOS](https://docs.docker.com/mac/started/)
-* [Windows](https://docs.docker.com/windows/started)
+- `linux/amd64`
+- `linux/arm64`
 
-#### Volumes
+### Contributing
 
-* `/app` - base directory for your application
-* `/app/public` - directory exposed to the world
+Contributions are welcome! Please fork this repository and submit a pull request with your changes.
 
-## Built With
+## Maintainers
 
-* PHP 8.1
-* Nginx
-* Imagemagick
+- [Samuel Fontebasso](https://github.com/fontebasso)
 
-See [Dockerfile](https://github.com/fontebasso/docker-php-nginx/blob/main/Dockerfile) for details of the extensions, libs and configurations.
+## Contact
 
-## Find Us
-
-* [GitHub](https://github.com/fontebasso/docker-php-nginx)
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://github.com/fontebasso/docker-php-nginx/blob/main/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Authors
-
-* **Samuel Fontebasso** - [fontebasso](https://github.com/fontebasso)
-
-See also the list of [contributors](https://github.com/fontebasso/docker-php-nginx/contributors) who participated in this project.
+For questions or support, please open an [issue](https://github.com/fontebasso/docker-php-nginx/issues) or contact the maintainers.
 
 ## License
 
-The MIT License, see the [LICENSE](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
