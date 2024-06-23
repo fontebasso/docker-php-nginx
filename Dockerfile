@@ -18,6 +18,8 @@ RUN set -ex; \
         ca-certificates \
         freetype-dev \
         ghostscript \
+        curl \
+        curl-dev \
         icu-dev \
         imagemagick \
         imagemagick-dev \
