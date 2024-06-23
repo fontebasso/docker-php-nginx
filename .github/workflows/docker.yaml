@@ -166,5 +166,5 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}
           subject-digest: ${{ env.TAG_DIGEST }}
           predicate-type: https://spdx.dev/Document
-          predicate: sbom/${{ env.TAG_NORMALIZED }}.sbom.spdx.json
+          predicate-path: sbom/${{ env.TAG_NORMALIZED }}.sbom.spdx.json
           push-to-registry: true
