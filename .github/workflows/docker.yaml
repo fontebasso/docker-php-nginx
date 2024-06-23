@@ -53,10 +53,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY_NAME }}
           tags: |
-            latest
-            ${{ env.MAJOR }}
-            ${{ env.MAJOR }}.${{ env.MINOR }}
             ${{ env.VERSION }}
+            ${{ env.MAJOR }}.${{ env.MINOR }}
+            ${{ env.MAJOR }}
+            latest
           annotations: |
             org.opencontainers.image.title=${{ env.REGISTRY_NAME }}
             org.opencontainers.image.description=$(cat README.md)
