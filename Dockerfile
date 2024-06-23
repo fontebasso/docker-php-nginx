@@ -35,7 +35,6 @@ RUN set -ex; \
        nginx \
        nginx-mod-http-headers-more \
        oniguruma-dev \
-       postgresql-dev \
        runit \
        sqlite; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
