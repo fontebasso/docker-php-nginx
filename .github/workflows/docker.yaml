@@ -28,6 +28,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
@@ -86,6 +90,8 @@ jobs:
               if [ -n "$digest" ]; then
                 normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
                 echo "${normalized_tag}=${digest}" >> digest_mapping.txt
+                mkdir -p sbom
+                syft "${tag}" -o spdx-json > "sbom/${normalized_tag}.sbom.spdx.json"
               fi
             done
           done
@@ -95,6 +101,12 @@ jobs:
         with:
           name: digest_mapping
           path: digest_mapping.txt
+
+      - name: Upload SBOM files
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom
 
   attest:
     needs: build
@@ -128,11 +140,17 @@ jobs:
         with:
           name: digest_mapping
 
+      - name: Download SBOM files
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom
+
       - name: Set digest for tag
         id: set-digest
         run: |
           normalized_tag=$(echo "${{ env.REGISTRY_NAME }}:${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
           TAG_DIGEST=$(grep "^${normalized_tag}=" digest_mapping.txt | cut -d '=' -f 2)
+          echo "TAG_NORMALIZED=${normalized_tag}" >> $GITHUB_ENV
           echo "TAG_DIGEST=${TAG_DIGEST}" >> $GITHUB_ENV
 
       - name: Attest
@@ -140,4 +158,13 @@ jobs:
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}
           subject-digest: ${{ env.TAG_DIGEST }}
+          push-to-registry: true
+
+      - name: Attest SBOM
+        uses: actions/attest@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}
+          subject-digest: ${{ env.TAG_DIGEST }}
+          predicate-type: https://spdx.dev/Document
+          predicate: sbom/${{ env.TAG_NORMALIZED }}.sbom.spdx.json
           push-to-registry: true
