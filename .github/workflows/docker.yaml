@@ -34,7 +34,11 @@ jobs:
       - name: Install Docker on macOS
         if: runner.os == 'macOS'
         run: |
-          brew install docker
+          DOCKER_URL="https://desktop.docker.com/mac/stable/arm64/Docker.dmg"
+          curl -L $DOCKER_URL -o Docker.dmg
+          hdiutil attach Docker.dmg
+          cp -R /Volumes/Docker/Docker.app /Applications
+          hdiutil detach /Volumes/Docker
           open /Applications/Docker.app
           while ! docker info > /dev/null 2>&1; do
             echo "Waiting for Docker to start..."
