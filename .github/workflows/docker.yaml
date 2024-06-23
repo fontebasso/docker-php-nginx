@@ -138,6 +138,6 @@ jobs:
       - name: Attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}:${{ matrix.tag }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}
           subject-digest: ${{ env.TAG_DIGEST }}
           push-to-registry: true
