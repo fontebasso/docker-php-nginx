@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       packages: write
@@ -15,16 +16,6 @@ jobs:
       REGISTRY: index.docker.io
       REGISTRY_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}
 
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux/amd64
-          - os: ubuntu-latest
-            platform: linux/arm64
-
-    runs-on: ${{ matrix.os }}
-
     outputs:
       VERSION: ${{ steps.vars.outputs.VERSION }}
       MAJOR: ${{ steps.vars.outputs.MAJOR }}
@@ -32,7 +23,6 @@ jobs:
 
     steps:
       - name: Set up QEMU
-        if: matrix.platform == 'linux/arm64'
         uses: docker/setup-qemu-action@v3
 
       - name: Publish version env var
@@ -63,10 +53,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY_NAME }}
           tags: |
-            ${{ env.VERSION }}
             latest
             ${{ env.MAJOR }}
             ${{ env.MAJOR }}.${{ env.MINOR }}
+            ${{ env.VERSION }}
           annotations: |
             org.opencontainers.image.title=${{ env.REGISTRY_NAME }}
             org.opencontainers.image.description=$(cat README.md)
@@ -76,9 +66,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ matrix.platform }}
-          push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
+          push: true
           build-args: |
             BUILD_ID=${{ github.run_id }}
             COMMIT_ID=$(git rev-parse --short "$GITHUB_SHA")
@@ -86,11 +76,13 @@ jobs:
       - name: Extract image digests
         id: extract-digest
         shell: bash
-        run: |
+        run: |  
           for tag in $(echo ${{ steps.meta.outputs.tags }} | tr ',' '\n'); do
-            digest=$(docker inspect --format='{{index .RepoDigests 0}}' $tag)
-            normalized_tag=$(echo "$tag" | tr ':' '_' | tr '.' '_')
-            echo "${normalized_tag}=${digest}" >> digest_mapping.txt
+            for platform in linux/amd64 linux/arm64; do
+              digest=$(docker buildx imagetools inspect ${env.REGISTRY_NAME}:${tag} --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
+              normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+              echo "${normalized_tag}=${digest}" >> digest_mapping.txt
+            done
           done
 
       - name: Upload digest mapping file
@@ -101,6 +93,7 @@ jobs:
 
   attest:
     needs: build
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       packages: write
@@ -112,9 +105,8 @@ jobs:
 
     strategy:
       matrix:
+        platform: [linux/amd64, linux/arm64]
         tag: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}"]
-
-    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -134,12 +126,13 @@ jobs:
       - name: Set digest for tag
         id: set-digest
         run: |
-          normalized_tag=$(echo "${{ matrix.tag }}" | tr ':' '_' | tr '.' '_')
-          echo "TAG_DIGEST=$(grep "^${normalized_tag}=" digest_mapping.txt | cut -d '=' -f 2)" >> $GITHUB_ENV
+          normalized_tag=$(echo "${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+          TAG_DIGEST=$(grep "^${normalized_tag}=" digest_mapping.txt | cut -d '=' -f 2)
+          echo "TAG_DIGEST=${TAG_DIGEST}" >> $GITHUB_ENV
 
       - name: Attest
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY_NAME }}:${{ matrix.tag }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}:${{ matrix.tag }}
           subject-digest: ${{ env.TAG_DIGEST }}
           push-to-registry: true
