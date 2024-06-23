@@ -82,9 +82,11 @@ jobs:
         run: |
           for tag in $(echo "${{ steps.meta.outputs.tags }}" | grep -Ev '^$' | tr ',' '\n'); do
             for platform in linux/amd64 linux/arm64; do
-              digest=$(docker buildx imagetools inspect "${{ env.REGISTRY_NAME }}:${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
-              normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
-              echo "${normalized_tag}=${digest}" >> digest_mapping.txt
+              digest=$(docker buildx imagetools inspect "${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
+              if [ -n "$digest" ]; then
+                normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+                echo "${normalized_tag}=${digest}" >> digest_mapping.txt
+              fi
             done
           done
 
@@ -129,7 +131,7 @@ jobs:
       - name: Set digest for tag
         id: set-digest
         run: |
-          normalized_tag=$(echo "${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+          normalized_tag=$(echo "${{ env.REGISTRY_NAME }}:${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
           TAG_DIGEST=$(grep "^${normalized_tag}=" digest_mapping.txt | cut -d '=' -f 2)
           echo "TAG_DIGEST=${TAG_DIGEST}" >> $GITHUB_ENV
 
