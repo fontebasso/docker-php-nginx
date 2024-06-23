@@ -13,6 +13,7 @@ LABEL \
 
 RUN set -ex; \
     \
+    apk update; \
     apk add --no-cache --upgrade bzip2-dev \
        ca-certificates \
        curl \
@@ -35,6 +36,7 @@ RUN set -ex; \
        nginx \
        nginx-mod-http-headers-more \
        oniguruma-dev \
+       openssl \
        runit \
        sqlite; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
