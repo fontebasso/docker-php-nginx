@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       packages: write
@@ -17,13 +18,9 @@ jobs:
 
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux/amd64
-          - os: macos-latest
-            platform: linux/arm64
-
-    runs-on: ${{ matrix.os }}
+        platform:
+          - linux/amd64
+          - linux/arm64
 
     outputs:
       VERSION: ${{ steps.vars.outputs.VERSION }}
@@ -31,18 +28,6 @@ jobs:
       MINOR: ${{ steps.vars.outputs.MINOR }}
 
     steps:
-      - name: Install Docker on macOS
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          brew install docker
-          curl -Lo /tmp/colima https://github.com/abiosoft/colima/releases/latest/download/colima-darwin-arm64
-          chmod +x /tmp/colima
-          sudo mv /tmp/colima /usr/local/bin
-          colima --version
-          colima start
-          docker version
-
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
