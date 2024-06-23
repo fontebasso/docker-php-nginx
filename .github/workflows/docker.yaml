@@ -25,6 +25,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    outputs:
+      VERSION: ${{ steps.vars.outputs.VERSION }}
+      MAJOR: ${{ steps.vars.outputs.MAJOR }}
+      MINOR: ${{ steps.vars.outputs.MINOR }}
+      PATCH: ${{ steps.vars.outputs.PATCH }}
+
     steps:
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -45,6 +51,10 @@ jobs:
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
           echo "MINOR=$MINOR" >> $GITHUB_ENV
           echo "PATCH=$PATCH" >> $GITHUB_ENV
+          echo "VERSION=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+          echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
+          echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
+          echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: meta
@@ -86,10 +96,20 @@ jobs:
 
   attest:
     needs: build
-    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+      attestations: write
+    env:
+      REGISTRY: index.docker.io
+      REGISTRY_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}
+
     strategy:
       matrix:
-        tag: [ latest, ${{ env.VERSION }}, ${{ env.MAJOR }}, ${{ env.MAJOR }}.${{ env.MINOR }} ]
+        tag: [latest, ${{ needs.build.outputs.VERSION }}, ${{ needs.build.outputs.MAJOR }}, ${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}]
+
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
