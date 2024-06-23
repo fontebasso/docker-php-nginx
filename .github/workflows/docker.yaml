@@ -34,10 +34,13 @@ jobs:
       - name: Install Docker on macOS
         if: runner.os == 'macOS'
         run: |
-          brew install minikube docker
-          minikube start --driver=docker
-          eval $(minikube -p minikube docker-env)
-          docker run -d hello-world
+          brew install docker
+          open /Applications/Docker.app
+          while ! docker info > /dev/null 2>&1; do
+            echo "Waiting for Docker to start..."
+            docker version
+            sleep 10
+          done
 
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
