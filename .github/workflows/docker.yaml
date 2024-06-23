@@ -63,8 +63,7 @@ jobs:
             latest
             ${{ env.MAJOR }}
             ${{ env.MAJOR }}.${{ env.MINOR }}
-          flavor: |
-            latest=${{ env.REGISTRY_NAME }}:latest
+          flavor: latest
           annotations: |
             org.opencontainers.image.title=${{ env.REGISTRY_NAME }}
             org.opencontainers.image.description=$(cat README.md)
