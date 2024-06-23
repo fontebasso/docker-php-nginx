@@ -26,7 +26,9 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     outputs:
-      TAG_LIST: ${{ steps.generate.outputs.tags }}
+      VERSION: ${{ steps.vars.outputs.VERSION }}
+      MAJOR: ${{ steps.vars.outputs.MAJOR }}
+      MINOR: ${{ steps.vars.outputs.MINOR }}
 
     steps:
       - name: Publish version env var
@@ -47,7 +49,9 @@ jobs:
           IFS='.' read -r MAJOR MINOR PATCH <<< "${{ env.VERSION }}"
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
           echo "MINOR=$MINOR" >> $GITHUB_ENV
-          echo "PATCH=$PATCH" >> $GITHUB_ENV
+          echo "VERSION=${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
+          echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
 
       - name: Docker meta
         id: meta
@@ -87,12 +91,6 @@ jobs:
             echo "digest_${tag_name}=${digest}" >> $GITHUB_OUTPUT
           done
 
-      - name: Generate tag list
-        id: generate
-        run: |
-          TAGS="latest,${{ env.VERSION }},${{ env.MAJOR }},${{ env.MAJOR }}.${{ env.MINOR }}"
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-
   attest:
     needs: build
     permissions:
@@ -106,7 +104,7 @@ jobs:
 
     strategy:
       matrix:
-        tag: [${{ needs.build.outputs.TAG_LIST }}]
+        tag: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}"]
 
     runs-on: ubuntu-latest
 
