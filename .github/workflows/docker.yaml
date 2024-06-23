@@ -14,7 +14,7 @@ jobs:
       attestations: write
     env:
       REGISTRY: index.docker.io
-      REGISTRY_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}
+      REGISTRY_NAME: fontebasso/php-nginx
 
     outputs:
       VERSION: ${{ steps.vars.outputs.VERSION }}
@@ -37,7 +37,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: fontebasso
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract version parts
@@ -79,10 +79,10 @@ jobs:
       - name: Extract image digests
         id: extract-digest
         shell: bash
-        run: |  
-          for tag in $(echo ${{ steps.meta.outputs.tags }} | tr ',' '\n'); do
+        run: |
+          for tag in $(echo "${{ steps.meta.outputs.tags }}" | grep -Ev '^$' | tr ',' '\n'); do
             for platform in linux/amd64 linux/arm64; do
-              digest=$(docker buildx imagetools inspect ${env.REGISTRY_NAME}:${tag} --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
+              digest=$(docker buildx imagetools inspect "${{ env.REGISTRY_NAME }}:${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
               normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
               echo "${normalized_tag}=${digest}" >> digest_mapping.txt
             done
@@ -104,11 +104,11 @@ jobs:
       attestations: write
     env:
       REGISTRY: index.docker.io
-      REGISTRY_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }}
+      REGISTRY_NAME: fontebasso/php-nginx
 
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        platform: ["linux/amd64", "linux/arm64"]
         tag: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}"]
 
     steps:
@@ -118,7 +118,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: fontebasso
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Download digest mapping file
