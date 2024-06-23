@@ -80,6 +80,13 @@ jobs:
             BUILD_ID=${{ github.run_id }}
             COMMIT_ID=$(git rev-parse --short "$GITHUB_SHA")
 
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: fontebasso
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.REGISTRY_NAME }}
+
       - name: Extract image digests
         id: extract-digest
         shell: bash
