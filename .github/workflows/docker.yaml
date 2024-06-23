@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           for tag in $(echo "${{ steps.meta.outputs.tags }}" | grep -Ev '^$' | tr ',' '\n'); do
-            for platform in linux/amd64 linux/arm64; do
+            for platform in linux/amd64; do
               digest=$(docker buildx imagetools inspect "${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
               if [ -n "$digest" ]; then
                 normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
@@ -122,7 +122,7 @@ jobs:
 
     strategy:
       matrix:
-        platform: ["linux/amd64", "linux/arm64"]
+        platform: ["linux/amd64"]
         tag: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}"]
 
     steps:
@@ -146,6 +146,10 @@ jobs:
           name: sbom
           path: ./sbom-extracted
 
+      - name: Extract SBOM ZIP
+        run: |
+          unzip sbom-extracted/sbom.zip -d sbom-extracted
+
       - name: Set digest for tag
         id: set-digest
         run: |
@@ -167,5 +171,5 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.REGISTRY_NAME }}
           subject-digest: ${{ env.TAG_DIGEST }}
           predicate-type: https://spdx.dev/Document
-          predicate-path: ./sbom-extracted/sbom/${{ env.TAG_NORMALIZED }}.sbom.spdx.json
+          predicate-path: ./sbom-extracted/${{ env.TAG_NORMALIZED }}.sbom.spdx.json
           push-to-registry: true
