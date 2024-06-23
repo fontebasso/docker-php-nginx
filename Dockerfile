@@ -13,29 +13,31 @@ LABEL \
 
 RUN set -ex; \
     \
-    apk add --no-cache --upgrade git \
-        bzip2-dev \
-        ca-certificates \
-        freetype-dev \
-        ghostscript \
-        curl \
-        curl-dev \
-        icu-dev \
-        imagemagick \
-        imagemagick-dev \
-        imagemagick-libs \
-        jpeg-dev \
-        libjpeg-turbo-dev \
-        libmcrypt-dev \
-        libpng-dev \
-        libressl-dev \
-        libxml2-dev \
-        libzip-dev \
-        nginx \
-        nginx-mod-http-headers-more \
-        oniguruma-dev \
-        postgresql-dev \
-        runit; \
+    apk add --no-cache --upgrade bzip2-dev \
+       ca-certificates \
+       curl \
+       curl-dev \
+       freetype-dev \
+       ghostscript \
+       git \
+       icu-dev \
+       imagemagick \
+       imagemagick-dev \
+       imagemagick-libs \
+       jpeg-dev \
+       libjpeg-turbo-dev \
+       libmcrypt-dev \
+       libpng-dev \
+       libressl-dev \
+       libxml2-dev \
+       libzip-dev \
+       ncurses \
+       nginx \
+       nginx-mod-http-headers-more \
+       oniguruma-dev \
+       postgresql-dev \
+       runit \
+       sqlite; \
     apk add --no-cache --virtual build-dependencies build-base gcc wget autoconf linux-headers; \
     docker-php-ext-configure gd \
       --with-freetype \
@@ -49,13 +51,13 @@ RUN set -ex; \
         exif \
         gd \
         opcache \
+        pcntl \
         pdo_mysql \
         shmop \
         sockets \
         sysvmsg \
         sysvsem \
         sysvshm \
-        pcntl \
         zip; \
     pecl install imagick; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
