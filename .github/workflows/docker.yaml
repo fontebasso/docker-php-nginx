@@ -34,8 +34,13 @@ jobs:
       - name: Install Docker on macOS
         if: runner.os == 'macOS'
         run: |
-          brew install docker
+          brew install docker docker-compose colima
           colima start
+          docker context use colima
+          while ! docker system info > /dev/null 2>&1; do
+            echo "Waiting for Docker to start..."
+            sleep 10
+          done
 
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
