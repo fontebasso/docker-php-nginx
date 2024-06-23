@@ -31,6 +31,16 @@ jobs:
       MINOR: ${{ steps.vars.outputs.MINOR }}
 
     steps:
+      - name: Install Docker on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install --cask docker
+          open /Applications/Docker.app
+          while ! docker system info > /dev/null 2>&1; do
+            echo "Waiting for Docker to start..."
+            sleep 5
+          done
+
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
@@ -63,7 +73,8 @@ jobs:
             latest
             ${{ env.MAJOR }}
             ${{ env.MAJOR }}.${{ env.MINOR }}
-          flavor: latest
+          flavor: |
+            latest=${{ env.VERSION }}
           annotations: |
             org.opencontainers.image.title=${{ env.REGISTRY_NAME }}
             org.opencontainers.image.description=$(cat README.md)
