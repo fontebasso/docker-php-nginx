@@ -132,6 +132,10 @@ jobs:
           username: fontebasso
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Pull image for signing
+        run: |
+          docker pull ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+
       - name: Load Docker Content Trust key
         run: |
           echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
