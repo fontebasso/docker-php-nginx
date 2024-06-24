@@ -102,11 +102,18 @@ jobs:
               digest=$(docker buildx imagetools inspect "${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
               if [ -n "$digest" ]; then
                 normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+                echo "${normalized_tag}=${digest}" >> digest_mapping.txt
                 mkdir -p sbom
                 syft "${tag}" -o spdx-json > "sbom/${normalized_tag}.sbom.spdx.json"
               fi
             done
           done
+
+      - name: Upload digest mapping file
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest_mapping
+          path: digest_mapping.txt
 
       - name: Upload SBOM files
         uses: actions/upload-artifact@v4
@@ -132,9 +139,17 @@ jobs:
           username: fontebasso
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Pull image for signing
+      - name: Download digest mapping file
+        uses: actions/download-artifact@v4
+        with:
+          name: digest_mapping
+
+      - name: Prepare
         run: |
-          docker pull ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          normalized_tag=$(echo "${{ env.REGISTRY_NAME }}:${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+          TAG_DIGEST=$(grep "^${normalized_tag}=" digest_mapping.txt | cut -d '=' -f 2)
+          echo "TAG_DIGEST=${TAG_DIGEST}" >> $GITHUB_ENV
+          echo "TAG_NORMALIZED=${normalized_tag}" >> $GITHUB_ENV
 
       - name: Cosign install
         run: |
@@ -149,24 +164,19 @@ jobs:
 
       - name: Sign image with Cosign
         run: |
-          ./cosign sign -key cosign.key ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
-          ./cosign verify -key cosign.pub ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          ./cosign sign --key cosign.key ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }} < $(echo "y\m")
+          ./cosign verify --key cosign.pub ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
 
       - name: Download SBOM files
         uses: actions/download-artifact@v4
         with:
           name: sbom
           path: ./sbom-extracted
-
-      - name: Prepare SBOM filename
-        run: |
-          normalized_tag=$(echo "${{ env.REGISTRY_NAME }}:${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
-          echo "TAG_NORMALIZED=${normalized_tag}" >> $GITHUB_ENV
           
       - name: Cosign attest SBOM
         run: |
-          ./cosign attest --key cosign.key --predicate ./sbom-extracted/${{ env.TAG_NORMALIZED }}.sbom.spdx.json --type spdxjson ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
-          ./cosign verify-attestation --key cosign.pub --type spdxjson ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          ./cosign attest --key cosign.key --predicate ./sbom-extracted/${{ env.TAG_NORMALIZED }}.sbom.spdx.json --type spdxjson ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
+          ./cosign verify-attestation --key cosign.pub --type spdxjson ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
 
       - name: Download provenance
         uses: actions/download-artifact@v4
@@ -175,9 +185,9 @@ jobs:
 
       - name: Cosign attest Provenance
         run: |
-            ./cosign attest --key cosign.key --predicate provenance.json --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
-            ./cosign verify-attestation --key cosign.pub --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+            ./cosign attest --key cosign.key --predicate provenance.json --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
+            ./cosign verify-attestation --key cosign.pub --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
 
       - name: Publish signature Rekor
         run: |
-          cosign sign --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          cosign sign --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}:${{ env.TAG_DIGEST }}
