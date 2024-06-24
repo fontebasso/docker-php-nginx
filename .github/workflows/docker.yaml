@@ -126,6 +126,12 @@ jobs:
         tags: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}", "${{ needs.build.outputs.MAJOR }}"]
 
     steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: fontebasso
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Load Docker Content Trust key
         run: |
           echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
