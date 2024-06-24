@@ -139,10 +139,10 @@ jobs:
       - name: Sign image with Docker Content Trust
         run: |
           echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > delegation.key
-          echo "${{ secrets.B64_DOCKER_DCT_PUB }}" | base64 -d > delegation.pub
+          echo "${{ secrets.B64_DOCKER_DCT_PUB }}" | base64 -d > delegation.crt
           chmod 600 delegation.key
-          docker trust key load --name fontebasso delegation.key
-          echo "${{ secrets.DOCKER_DCT_KEY_PASSWORD }}" | docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local
+          docker trust key load delegation.key --name fontebasso
+          docker trust signer add --key delegation.crt fontebasso ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
           docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
         env:
           DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.DOCKER_DCT_KEY_PASSWORD }}
