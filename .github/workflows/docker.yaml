@@ -142,7 +142,7 @@ jobs:
           echo "${{ secrets.B64_DOCKER_DCT_PUB }}" | base64 -d > delegation.crt
           chmod 600 delegation.key
           docker trust key load delegation.key --name fontebasso
-          docker trust signer add --key delegation.crt fontebasso ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          docker trust signer add --key delegation.crt fontebasso ${{ env.REGISTRY_NAME }}
           docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
           docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
         env:
