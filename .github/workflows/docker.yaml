@@ -167,27 +167,6 @@ jobs:
           ./cosign sign --yes --key cosign.key ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
           ./cosign verify --key cosign.pub ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
 
-      - name: Download SBOM files
-        uses: actions/download-artifact@v4
-        with:
-          name: sbom
-          path: ./sbom-extracted
-          
-      - name: Cosign attest SBOM
-        run: |
-          ./cosign attest --yes --key cosign.key --predicate ./sbom-extracted/${{ env.TAG_NORMALIZED }}.sbom.spdx.json --type spdxjson ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
-          ./cosign verify-attestation --key cosign.pub --type spdxjson ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
-
-      - name: Download provenance
-        uses: actions/download-artifact@v4
-        with:
-          name: provenance
-
-      - name: Cosign attest Provenance
-        run: |
-            ./cosign attest --yes --key cosign.key --predicate provenance.json --type slsaprovenance ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
-            ./cosign verify-attestation --key cosign.pub --type slsaprovenance ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
-
       - name: Publish signature Rekor
         run: |
           cosign sign --yes --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
