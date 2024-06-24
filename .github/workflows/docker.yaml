@@ -136,20 +136,14 @@ jobs:
         run: |
           docker pull ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
 
-      - name: Load Docker Content Trust key
-        run: |
-          echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
-          echo "${{ secrets.B64_DOCKER_DCT_KEY_PUB }}" | base64 -d > dct.pub
-          docker trust key load dct.key --name fontebasso | cat <<EOF
-          ${{ secrets.DOCKER_DCT_PASSWORD }}
-          EOF
-
       - name: Sign image with Docker Content Trust
         run: |
-          docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local | cat <<EOF
-          ${{ secrets.DOCKER_DCT_PASSWORD }}
-          EOF
+          echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
+          docker trust key load dct.key --name fontebasso
+          docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local
           docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+        env:
+          DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.DOCKER_DCT_KEY_PASSWORD }}
 
       - name: Cosign install
         run: |
