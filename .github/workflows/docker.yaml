@@ -169,4 +169,4 @@ jobs:
 
       - name: Publish signature Rekor
         run: |
-          cosign sign --yes --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
+          ./cosign sign --yes --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}@${{ env.TAG_DIGEST }}
