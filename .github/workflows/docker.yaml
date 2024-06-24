@@ -139,6 +139,7 @@ jobs:
       - name: Sign image with Docker Content Trust
         run: |
           echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
+          chmod 600 dct.key
           docker trust key load dct.key --name fontebasso
           docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local
           docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
