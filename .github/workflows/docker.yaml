@@ -146,9 +146,9 @@ jobs:
           name: sbom
           path: ./sbom-extracted
 
-      - name: Extract SBOM ZIP
+      - name: Show artifacts
         run: |
-          unzip sbom-extracted/sbom.zip -d sbom-extracted
+          echo $(ls ./sbom-extracted)
 
       - name: Set digest for tag
         id: set-digest
