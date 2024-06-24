@@ -146,7 +146,9 @@ jobs:
 
       - name: Sign image with Docker Content Trust
         run: |
-          docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local
+          docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --local | cat <<EOF
+          ${{ secrets.DOCKER_DCT_PASSWORD }}
+          EOF
           docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
 
       - name: Cosign install
