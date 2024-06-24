@@ -28,6 +28,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Publish version env var
         run: echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
@@ -77,3 +81,106 @@ jobs:
           build-args: |
             BUILD_ID=${{ github.run_id }}
             COMMIT_ID=$(git rev-parse --short "$GITHUB_SHA")
+            
+      - name: Extract provenance
+        shell: bash
+        run: |
+          echo $(jq -r '.provenance[]' < $GITHUB_WORKSPACE/.github/actions/buildx/output.json) > provenance.json        
+
+      - name: Upload provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance
+          path: provenance.json
+
+      - name: Generate SBOM
+        id: sbom
+        shell: bash
+        run: |
+          for tag in $(echo "${{ steps.meta.outputs.tags }}" | grep -Ev '^$' | tr ',' '\n'); do
+            for platform in linux/amd64; do
+              digest=$(docker buildx imagetools inspect "${tag}" --raw | jq -r ".manifests[] | select(.platform.architecture==\"${platform##*/}\") | .digest")
+              if [ -n "$digest" ]; then
+                normalized_tag=$(echo "${tag}_${platform}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+                mkdir -p sbom
+                syft "${tag}" -o spdx-json > "sbom/${normalized_tag}.sbom.spdx.json"
+              fi
+            done
+          done
+
+      - name: Upload SBOM files
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom
+
+  sign:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      REGISTRY_NAME: fontebasso/php-nginx
+
+    strategy:
+      matrix:
+        platform: ["linux/amd64"]
+        tags: ["latest", "${{ needs.build.outputs.VERSION }}", "${{ needs.build.outputs.MAJOR }}.${{ needs.build.outputs.MINOR }}", "${{ needs.build.outputs.MAJOR }}"]
+
+    steps:
+      - name: Load Docker Content Trust key
+        run: |
+          echo "${{ secrets.B64_DOCKER_DCT_KEY }}" | base64 -d > dct.key
+          echo "${{ secrets.B64_DOCKER_DCT_KEY_PUB }}" | base64 -d > dct.pub
+          docker trust key load dct.key --name fontebasso | cat <<EOF
+          ${{ secrets.DOCKER_DCT_PASSWORD }}
+          EOF
+
+      - name: Sign image with Docker Content Trust
+        run: |
+          docker trust sign ${{ env.REGISTRY_NAME }}:${{ matrix.tags }} --key dct.key --local
+          docker trust inspect --pretty ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+
+      - name: Cosign install
+        run: |
+          curl -LO https://github.com/sigstore/cosign/releases/download/v2.2.4/cosign-linux-amd64
+          chmod +x cosign-linux-amd64
+          mv cosign-linux-amd64 cosign
+
+      - name: Load Cosign key
+        run: |
+          echo "${{ secrets.B64_COSIGN_KEY }}" | base64 -d > cosign.key
+          echo "${{ secrets.B64_COSIGN_PUB }}" | base64 -d > cosign.pub
+
+      - name: Sign image with Cosign
+        run: |
+          ./cosign sign -key cosign.key ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          ./cosign verify -key cosign.pub ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+
+      - name: Download SBOM files
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom
+          path: ./sbom-extracted
+
+      - name: Prepare SBOM filename
+        run: |
+          normalized_tag=$(echo "${{ env.REGISTRY_NAME }}:${{ matrix.tag }}_${{ matrix.platform }}" | tr ':' '_' | tr '.' '_' | tr '/' '_' | tr '-' '_')
+          echo "TAG_NORMALIZED=${normalized_tag}" >> $GITHUB_ENV
+          
+      - name: Cosign attest SBOM
+        run: |
+          ./cosign attest --key cosign.key --predicate ./sbom-extracted/${{ env.TAG_NORMALIZED }}.sbom.spdx.json --type spdxjson ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+          ./cosign verify-attestation --key cosign.pub --type spdxjson ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+
+      - name: Download provenance
+        uses: actions/download-artifact@v4
+        with:
+          name: provenance
+
+      - name: Cosign attest Provenance
+        run: |
+            ./cosign attest --key cosign.key --predicate provenance.json --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+            ./cosign verify-attestation --key cosign.pub --type slsaprovenance ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
+
+      - name: Publish signature Rekor
+        run: |
+          cosign sign --key cosign.key --rekor-url https://rekor.sigstore.dev ${{ env.REGISTRY_NAME }}:${{ matrix.tags }}
