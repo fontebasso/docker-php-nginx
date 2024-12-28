@@ -18,22 +18,46 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx (cloud driver)
         uses: docker/setup-buildx-action@v3
         with:
-          version: "lab:latest"
+          version: lab:latest
           driver: cloud
-          endpoint: "fontebasso/multiarch-builder"
+          endpoint: fontebasso/multiarch-builder
 
       - name: Extract release version
         id: version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Build and push
+      - name: Build for amd64
         uses: docker/build-push-action@v6
         with:
           context: .
           tags: |
-            fontebasso/php-nginx:${{ env.RELEASE_VERSION }}
-            fontebasso/php-nginx:latest
-          platforms: linux/amd64,linux/arm64
+            fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-amd64
+          platforms: linux/amd64
+          push: true
+
+      - name: Build for arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: |
+            fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-arm64
+          platforms: linux/arm64
+          push: true
+
+      - name: Merge and push multi-arch
+        run: |
+          docker buildx imagetools create \
+            --tag fontebasso/php-nginx:${{ env.RELEASE_VERSION }} \
+            --tag fontebasso/php-nginx:latest \
+            fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-amd64 \
+            fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-arm64
+
+      - name: Clean up intermediate tags
+        run: |
+          docker logout
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker rmi fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-amd64 || true
+          docker rmi fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-arm64 || true
