@@ -64,6 +64,7 @@ RUN set -eux; \
         sysvsem \
         sysvshm \
         zip; \
+    pecl install grpc; \
     git clone https://github.com/Imagick/imagick.git --depth 1 /tmp/imagick; \
     cd /tmp/imagick; \
     phpize; \
@@ -71,6 +72,7 @@ RUN set -eux; \
     make -j$(nproc); \
     make install; \
     docker-php-ext-enable --ini-name docker-php-ext-x-01-imagick.ini imagick; \
+    docker-php-ext-enable --ini-name docker-php-ext-x-02-grpc.ini grpc; \
     apk del .build-deps; \
     rm -rf /var/cache/apk/* /tmp/imagick; \
     ln -sf /dev/stdout /var/log/nginx/access.log; \
