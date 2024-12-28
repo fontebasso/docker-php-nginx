@@ -37,6 +37,8 @@ jobs:
             fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-amd64
           platforms: linux/amd64
           push: true
+          attestations: |
+            type=provenance,mode=max
 
       - name: Build for arm64
         uses: docker/build-push-action@v6
@@ -46,6 +48,8 @@ jobs:
             fontebasso/php-nginx:${{ env.RELEASE_VERSION }}-arm64
           platforms: linux/arm64
           push: true
+          attestations: |
+            type=provenance,mode=max
 
       - name: Merge and push multi-arch
         run: |
