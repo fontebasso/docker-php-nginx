@@ -6,8 +6,8 @@ on:
       - published
 
 permissions:
-  contents: write
   id-token: write
+  contents: read
 
 jobs:
   build:
@@ -50,6 +50,8 @@ jobs:
           tags: fontebasso/php-nginx:${{ steps.version.outputs.tag }}-${{ matrix.arch }}
           push: true
           provenance: true
+          build-args: |
+            VERSION=${{ steps.version.outputs.tag }}
 
   merge:
     needs: build
@@ -76,7 +78,11 @@ jobs:
         uses: sigstore/cosign-installer@v3.8.1
 
       - name: Sign image using GitHub OIDC
-        run: cosign sign --yes --key github docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes --key github docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
+          cosign sign --yes --key github docker.io/fontebasso/php-nginx:latest
 
       - name: Generate and attach SLSA Provenance
         run: |
@@ -84,3 +90,7 @@ jobs:
             --key github \
             --type=provenance \
             docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
+          cosign attest --yes \
+            --key github \
+            --type=provenance \
+            docker.io/fontebasso/php-nginx:latest

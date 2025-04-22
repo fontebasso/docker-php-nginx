@@ -2,22 +2,24 @@
 
 [![Docker Build](https://github.com/fontebasso/docker-php-nginx/workflows/docker/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions?query=workflow%3Adocker)
 [![Docker Pulls](https://img.shields.io/docker/pulls/fontebasso/php-nginx)](https://hub.docker.com/r/fontebasso/php-nginx)
-[![GitHub Repo](https://img.shields.io/badge/github-repo-yellowgreen)](https://github.com/fontebasso/docker-php-nginx)
-[![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 [![Signed with Sigstore](https://img.shields.io/badge/sigstore-signed-blue?logo=sigstore)](https://www.sigstore.dev)
+[![Provenance Verified](https://img.shields.io/badge/provenance-SLSA%20v1.0-brightgreen)](https://github.com/sigstore/cosign)
+[![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 
 This repository contains a Docker image for running high-performance PHP web applications. It is optimized for speed, efficiency, and includes a comprehensive set of tools and libraries commonly used in web development.
-
-> This image is **signed and attested using [Sigstore](https://www.sigstore.dev/)**. You can publicly verify its provenance using cosign.
 
 > If you identify a security breach, please report it as soon as possible under the guidelines outlined in our [security policy](SECURITY.md).
 
 
-## Security & Provenance
+## Supply Chain Security
 
-This image is cryptographically signed using GitHub OIDC and cosign, and its build provenance is verifiable through the Rekor transparency log.
+This image is:
 
-To verify the image and its provenance:
+- ✅ Signed with [Sigstore Cosign](https://docs.sigstore.dev)
+- ✅ Provenance generated in the [SLSA v1.0](https://slsa.dev/spec/v1.0/provenance)
+- ✅ Compatible with verification using `cosign verify` and `cosign verify-attestation`
+
+To verify the image and its provenance (example):
 
 ```bash
 cosign verify docker.io/fontebasso/php-nginx:latest

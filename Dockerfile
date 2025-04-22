@@ -5,8 +5,14 @@ FROM ${NAME_IMAGE_BASE}:${NAME_IMAGE_TAG}
 
 ARG VERSION_OS='3.20'
 ARG VERSION_PHP='8.3'
+ARG VERSION='unknown'
 
 LABEL \
+    org.opencontainers.image.title="PHP + NGINX"
+    org.opencontainers.image.description="Lightweight and secure image with PHP 8.3 and NGINX on Alpine" \
+    org.opencontainers.image.source="https://github.com/fontebasso/docker-php-nginx" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.licenses="MIT" \
     maintainer="Samuel Fontebasso <samuel.txd@gmail.com>" \
     alpine="${VERSION_OS}" \
     php_version="${VERSION_PHP}"
