@@ -104,3 +104,4 @@ jobs:
       id-token: write
       contents: read
       packages: write
+      actions: read
