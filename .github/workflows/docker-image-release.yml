@@ -81,16 +81,14 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "1"
         run: |
-          cosign sign --yes --key github docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
-          cosign sign --yes --key github docker.io/fontebasso/php-nginx:latest
+          cosign sign --yes docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
+          cosign sign --yes docker.io/fontebasso/php-nginx:latest
 
       - name: Generate and attach SLSA Provenance
         run: |
           cosign attest --yes \
-            --key github \
             --type=provenance \
             docker.io/fontebasso/php-nginx:${RELEASE_VERSION}
           cosign attest --yes \
-            --key github \
             --type=provenance \
             docker.io/fontebasso/php-nginx:latest
