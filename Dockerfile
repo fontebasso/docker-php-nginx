@@ -8,7 +8,7 @@ ARG VERSION_PHP='8.3'
 ARG VERSION='unknown'
 
 LABEL \
-    org.opencontainers.image.title="PHP + NGINX"
+    org.opencontainers.image.title="PHP + NGINX" \
     org.opencontainers.image.description="Lightweight and secure image with PHP 8.3 and NGINX on Alpine" \
     org.opencontainers.image.source="https://github.com/fontebasso/docker-php-nginx" \
     org.opencontainers.image.version="${VERSION}" \
