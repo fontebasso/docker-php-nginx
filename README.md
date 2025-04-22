@@ -3,7 +3,7 @@
 [![Docker Build](https://github.com/fontebasso/docker-php-nginx/workflows/docker/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions?query=workflow%3Adocker)
 [![Docker Pulls](https://img.shields.io/docker/pulls/fontebasso/php-nginx)](https://hub.docker.com/r/fontebasso/php-nginx)
 [![Signed with Sigstore](https://img.shields.io/badge/sigstore-signed-blue?logo=sigstore)](https://www.sigstore.dev)
-[![Provenance Verified](https://img.shields.io/badge/provenance-SLSA%20v1.0-brightgreen)](https://github.com/sigstore/cosign)
+[![SLSA Provenance](https://img.shields.io/badge/provenance-SLSA%20v1.1-brightgreen)](https://slsa.dev/spec/v1.1)
 [![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 
 This repository contains a Docker image for running high-performance PHP web applications. It is optimized for speed, efficiency, and includes a comprehensive set of tools and libraries commonly used in web development.
@@ -16,7 +16,7 @@ This repository contains a Docker image for running high-performance PHP web app
 This image is:
 
 - ✅ Signed with [Sigstore Cosign](https://docs.sigstore.dev)
-- ✅ Provenance generated in the [SLSA v1.0](https://slsa.dev/spec/v1.0/provenance)
+- ✅ Provenance generated in the [SLSA v1.1](https://slsa.dev/spec/v1.1/provenance)
 - ✅ Compatible with verification using `cosign verify` and `cosign verify-attestation`
 
 To verify the image and its provenance (example):
