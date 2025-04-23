@@ -100,6 +100,9 @@ jobs:
     with:
       image: docker.io/fontebasso/php-nginx
       digest: ${{ needs.merge-multiarch.outputs.digest }}
+    secrets:
+      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
     permissions:
       id-token: write
       contents: read
