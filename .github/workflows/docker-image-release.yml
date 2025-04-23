@@ -79,7 +79,7 @@ jobs:
             fontebasso/php-nginx:${RELEASE_VERSION}-amd64 \
             fontebasso/php-nginx:${RELEASE_VERSION}-arm64
 
-          digest=$(docker buildx imagetools inspect fontebasso/php-nginx:${RELEASE_VERSION} --format '{{.Digest}}')
+          digest=$(docker buildx imagetools inspect fontebasso/php-nginx:${RELEASE_VERSION} --format '{{json .}}' | jq -r '.manifest.digest')
           echo "digest=$digest"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
