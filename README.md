@@ -3,30 +3,12 @@
 [![Docker Build](https://github.com/fontebasso/docker-php-nginx/workflows/docker/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions?query=workflow%3Adocker)
 [![Docker Pulls](https://img.shields.io/docker/pulls/fontebasso/php-nginx)](https://hub.docker.com/r/fontebasso/php-nginx)
 [![Signed with Sigstore](https://img.shields.io/badge/sigstore-signed-blue?logo=sigstore)](https://www.sigstore.dev)
-[![SLSA Provenance](https://img.shields.io/badge/provenance-SLSA%20v1.1-brightgreen)](https://slsa.dev/spec/v1.1)
+[![SLSA Provenance](https://img.shields.io/badge/provenance-SLSA%20attested-green)](https://slsa.dev)
 [![GitHub License](https://img.shields.io/github/license/fontebasso/docker-php-nginx)](https://github.com/fontebasso/docker-php-nginx/blob/main/LICENSE)
 
 This repository contains a Docker image for running high-performance PHP web applications. It is optimized for speed, efficiency, and includes a comprehensive set of tools and libraries commonly used in web development.
 
 > If you identify a security breach, please report it as soon as possible under the guidelines outlined in our [security policy](SECURITY.md).
-
-
-## Supply Chain Security
-
-This image is:
-
-- ✅ Signed with [Sigstore Cosign](https://docs.sigstore.dev)
-- ✅ Provenance generated in the [SLSA v1.1](https://slsa.dev/spec/v1.1/provenance)
-- ✅ Compatible with verification using `cosign verify` and `cosign verify-attestation`
-
-To verify the image and its provenance (example):
-
-```bash
-cosign verify docker.io/fontebasso/php-nginx:latest
-cosign verify-attestation --type=provenance docker.io/fontebasso/php-nginx:latest
-```
-
-No manual setup or keys required — Cosign uses GitHub Actions identity.
 
 ## Features
 
@@ -37,6 +19,33 @@ No manual setup or keys required — Cosign uses GitHub Actions identity.
 - **Pre-installed Libraries:** `git`, `icu-dev`, `imagemagick`, `freetype`, `jpeg`, `libpng`, `libxml2`, `libzip`, `oniguruma`, `curl`, `nginx-mod-http-headers-more`.
 - **Runit:** Lightweight init system for process supervision.
 - **Multi-arch builds:** Supports linux/amd64 and linux/arm64.
+
+## Supply Chain Security
+
+This image is:
+
+- ✅ Signed with [Sigstore Cosign](https://docs.sigstore.dev)
+- ✅ Provenance generated in the [SLSA v0.2](https://slsa.dev/spec/v0.2/provenance)
+- ✅ Compatible with verification using `cosign verify` and `cosign verify-attestation`
+
+To verify the image and its provenance (example):
+
+```bash
+cosign verify \
+  --certificate-identity-regexp "github.com/fontebasso/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  docker.io/fontebasso/php-nginx@sha256:172b4099efe5133aa45ce8758713661006c4192c9034a343267ee4ed6521ac79
+```
+
+```bash
+cosign verify-attestation \
+  --type=https://slsa.dev/provenance/v0.2 \
+  --certificate-identity-regexp "github.com/slsa-framework/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  docker.io/fontebasso/php-nginx@sha256:172b4099efe5133aa45ce8758713661006c4192c9034a343267ee4ed6521ac79
+```
+
+No manual setup or keys required — Cosign uses GitHub Actions identity.
 
 ## Getting Started
 
