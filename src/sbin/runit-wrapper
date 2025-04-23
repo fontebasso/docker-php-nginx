@@ -1,20 +1,51 @@
 #!/bin/sh
 
 main() {
-  # Dump environment
   export > /env
 
-  trap onterm SIGTERM SIGINT
+  trap on_term TERM INT
+  trap on_usr1 USR1
+  trap on_hup HUP
 
-  echo "Starting runit"
+  echo "Starting runsvdir..." >&2
   /sbin/runsvdir-start &
-  wait "$!"
+  runsv_pid=$!
+
+  wait "$runsv_pid"
+  echo "runsvdir exited unexpectedly, shutting down container." >&2
+  exit 1
 }
 
-onterm() {
-  echo "Exiting..."
-  pkill -SIGHUP runsvdir-start
-  exit $?
+on_term() {
+  echo "Received SIGTERM or SIGINT, initiating shutdown..." >&2
+
+  echo "→ Sending termination signal to nginx..." >&2
+  sv term /etc/service/nginx
+
+  echo "→ Waiting for nginx to shut down gracefully..." >&2
+  while sv status /etc/service/nginx | grep -q '^run'; do
+    sleep 0.5
+  done
+  echo "✓ Nginx has exited." >&2
+
+  echo "→ Terminating php-fpm..." >&2
+  sv term /etc/service/php-fpm
+
+  exit 0
+}
+
+on_usr1() {
+  echo "Received SIGUSR1 (Vault template updated), reloading env and restarting php-fpm..." >&2
+  set -a
+  . /secrets/file.env
+  set +a
+
+  sv restart /etc/service/php-fpm
+}
+
+on_hup() {
+  echo "Received SIGHUP, forwarding to nginx..." >&2
+  sv hup /etc/service/nginx
 }
 
 main "$@"

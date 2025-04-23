@@ -1,6 +1,10 @@
 #!/bin/sh
 
-exec 2>&1
 source /env
 
-exec php-fpm --nodaemonize
+php-fpm --nodaemonize &
+pid=$!
+
+trap 'echo "php-fpm shutting down..."; kill -TERM "$pid"; wait "$pid"; exit 0' TERM INT
+
+wait "$pid"

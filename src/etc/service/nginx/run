@@ -1,7 +1,12 @@
 #!/bin/sh
 
-exec 2>&1
 source /env
-
 mkdir -p /run/nginx
-exec /usr/sbin/nginx -g 'daemon off;'
+
+/usr/sbin/nginx -g 'daemon off;' > /dev/null &
+pid=$!
+
+trap 'echo "Received SIGTERM or SIGINT, quitting nginx..." >&2; /usr/sbin/nginx -s quit; wait "$pid"; exit 0' TERM INT
+trap 'echo "Received SIGHUP, reloading nginx..." >&2; /usr/sbin/nginx -s reload' HUP
+
+wait "$pid"
