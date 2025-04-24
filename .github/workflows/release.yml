@@ -103,6 +103,12 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.8.1
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Generate SBOM (Syft JSON)
         run: |
           syft docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
