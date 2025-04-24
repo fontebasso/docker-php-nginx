@@ -114,10 +114,12 @@ jobs:
           syft docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
             -o spdx-json > sbom.spdx.json
 
-      - name: Attach SBOM to image
+      - name: Attest SBOM
         run: |
-          cosign attach sbom \
-            --sbom sbom.spdx.json \
+          cosign attest \
+            --yes \
+            --type spdx \
+            --predicate sbom.spdx.json \
             docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
 
       - name: Upload SBOM artifact
@@ -135,7 +137,7 @@ jobs:
             docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
 
   generate-provenance:
-    name: Generate SLSA Provenance v1.1
+    name: Generate SLSA Provenance
     needs: merge-multiarch
     if: startsWith(github.ref, 'refs/tags/')
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
