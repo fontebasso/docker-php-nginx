@@ -1,4 +1,4 @@
-name: Docker Provenance Multi-Arch Build
+name: Docker Image Release
 
 on:
   release:
@@ -92,6 +92,42 @@ jobs:
         run: |
           cosign sign --yes docker.io/fontebasso/php-nginx@${{ steps.push.outputs.digest }}
 
+  attach-sbom:
+    name: Generate and Attach SBOM
+    needs: merge-multiarch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0.18.0
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Generate SBOM (Syft JSON)
+        run: |
+          syft docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
+            -o spdx-json > sbom.spdx.json
+
+      - name: Attach SBOM to image
+        run: |
+          cosign attach sbom \
+            --sbom sbom.spdx.json \
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'sbom'
+          path: sbom.spdx.json
+
+      - name: Sign SBOM
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes \
+            --attachment sbom \
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
+
   generate-provenance:
     name: Generate SLSA Provenance v1.1
     needs: merge-multiarch
@@ -104,7 +140,50 @@ jobs:
       registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
       registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
     permissions:
+      packages: write
       id-token: write
       contents: read
-      packages: write
       actions: read
+
+  publish-assets:
+    name: Publish SBOM and Provenance to Release
+    needs: [ attach-sbom, generate-provenance, merge-multiarch ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Extract release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Download provenance from registry
+        run: |
+          cosign download attestation \
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
+            --output-file provenance.intoto.jsonl
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: 'sbom'
+
+      - name: Save digest to file
+        run: echo "${{ needs.merge-multiarch.outputs.digest }}" > digest.txt
+
+      - name: Generate checksums
+        run: |
+          sha256sum \
+            provenance.intoto.jsonl \
+            sbom.spdx.json \
+            digest.txt > checksums.txt
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            provenance.intoto.jsonl
+            sbom.spdx.json
+            digest.txt
+            checksums.txt

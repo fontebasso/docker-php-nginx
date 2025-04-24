@@ -12,11 +12,9 @@ This repository contains a Docker image for running high-performance PHP web app
 
 ## Features
 
-- **PHP 8.3:** Modern version with performance improvements and long-term support.
 - **Alpine Linux 3.20:** Minimal base for better security and smaller footprint.
+- **PHP 8.3:** Modern version with performance improvements and long-term support.
 - **Nginx:** Fast and reliable web server.
-- **Essential PHP Extensions:** Includes `bcmath`, `bz2`, `calendar`, `exif`, `gd`, `opcache`, `pcntl`, `pdo_mysql`, `shmop`, `sockets`, `sysvmsg`, `sysvsem`, `sysvshm`, `zip`, `imagick`, `grpc`.
-- **Pre-installed Libraries:** `git`, `icu-dev`, `imagemagick`, `freetype`, `jpeg`, `libpng`, `libxml2`, `libzip`, `oniguruma`, `curl`, `nginx-mod-http-headers-more`.
 - **Runit:** Lightweight init system for process supervision.
 - **Multi-arch builds:** Supports linux/amd64 and linux/arm64.
 

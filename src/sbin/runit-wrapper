@@ -1,51 +1,33 @@
 #!/bin/sh
 
 main() {
-  export > /env
-
+  export > /env 2>/dev/null
   trap on_term TERM INT
   trap on_usr1 USR1
-  trap on_hup HUP
-
-  echo "Starting runsvdir..." >&2
-  /sbin/runsvdir-start &
+  trap on_hup  HUP
+  /sbin/runsvdir-start >/dev/null &
   runsv_pid=$!
-
-  wait "$runsv_pid"
-  echo "runsvdir exited unexpectedly, shutting down container." >&2
+  while kill -0 "$runsv_pid" 2>/dev/null; do
+    sleep 1
+  done
   exit 1
 }
 
 on_term() {
-  echo "Received SIGTERM or SIGINT, initiating shutdown..." >&2
-
-  echo "→ Sending termination signal to nginx..." >&2
-  sv term /etc/service/nginx
-
-  echo "→ Waiting for nginx to shut down gracefully..." >&2
-  while sv status /etc/service/nginx | grep -q '^run'; do
-    sleep 0.5
-  done
-  echo "✓ Nginx has exited." >&2
-
-  echo "→ Terminating php-fpm..." >&2
-  sv term /etc/service/php-fpm
-
-  exit 0
+  sv down /etc/service/nginx >/dev/null 2>&1
+  sv down /etc/service/php-fpm >/dev/null 2>&1
+  while sv status /etc/service/nginx 2>/dev/null | grep -q '^run'; do sleep 0.2; done
+  while sv status /etc/service/php-fpm 2>/dev/null | grep -q '^run'; do sleep 0.2; done
+  kill "$runsv_pid"
 }
 
 on_usr1() {
-  echo "Received SIGUSR1 (Vault template updated), reloading env and restarting php-fpm..." >&2
-  set -a
-  . /secrets/file.env
-  set +a
-
-  sv restart /etc/service/php-fpm
+  sv restart /etc/service/nginx >/dev/null 2>&1 || echo "⚠️ nginx restart failed" >&2
+  sv restart /etc/service/php-fpm >/dev/null 2>&1 || echo "⚠️ php-fpm restart failed" >&2
 }
 
 on_hup() {
-  echo "Received SIGHUP, forwarding to nginx..." >&2
-  sv hup /etc/service/nginx
+  sv hup /etc/service/nginx >/dev/null 2>&1
 }
 
 main "$@"
