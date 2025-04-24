@@ -51,7 +51,6 @@ jobs:
           tags: fontebasso/php-nginx:${{ steps.version.outputs.tag }}-${{ matrix.arch }}
           push: true
           provenance: true
-          attests: true
           sbom: true
           build-args: |
             VERSION=${{ steps.version.outputs.tag }}
