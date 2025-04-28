@@ -24,6 +24,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     outputs:
       version: ${{ steps.version.outputs.tag }}
+      alpine_version: ${{ steps.versions.outputs.alpine_version }}
+      php_version: ${{ steps.versions.outputs.php_version }}
+      nginx_version: ${{ steps.versions.outputs.nginx_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,6 +46,19 @@ jobs:
         with:
           install: true
 
+      - name: Software updated versions
+        id: versions
+        run: |
+          alpine_version=$(curl -s https://alpinelinux.org/downloads/ | grep -oP 'Current Alpine Version <strong>\K[0-9]+\.[0-9]+\.[0-9]+')
+          php_version=$(curl -s "https://www.php.net/releases/index.php?json&version=8.3" | jq -r '.version')
+          nginx_version=$(curl -s https://nginx.org/en/CHANGES | grep -m1 -oP 'Changes with nginx \K[0-9]+\.[0-9]+\.[0-9]+')
+          [ -z "$alpine_version" ] && { echo "Error: empty alpine_version"; exit 1; }
+          [ -z "$php_version" ] && { echo "Error: empty php_version"; exit 1; }
+          [ -z "$nginx_version" ] && { echo "Error: empty nginx_version"; exit 1; }
+          echo "alpine_version=$alpine_version" >> "$GITHUB_OUTPUT"
+          echo "php_version=$php_version" >> "$GITHUB_OUTPUT"
+          echo "nginx_version=$nginx_version" >> "$GITHUB_OUTPUT"
+
       - name: Build and push image for ${{ matrix.arch }}
         uses: docker/build-push-action@v6
         with:
@@ -54,6 +70,25 @@ jobs:
           sbom: true
           build-args: |
             VERSION=${{ steps.version.outputs.tag }}
+            ALPINE_VERSION=${{ steps.versions.outputs.alpine_version }}
+            PHP_VERSION=${{ steps.versions.outputs.php_version }}
+            NGINX_VERSION=${{ steps.versions.outputs.nginx_version }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Digest for image
+        id: get_digest
+        run: |
+          digest=$(docker buildx imagetools inspect fontebasso/php-nginx:${{ steps.version.outputs.tag }}-${{ matrix.arch }} --format '{{json .}}' | jq -r '.manifest.digest')
+          echo "digest=$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Sign image by digest (OIDC keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes docker.io/fontebasso/php-nginx@${{ steps.get_digest.outputs.digest }}
 
   merge-multiarch:
     name: Merge Multi-Arch Image and Sign
@@ -79,10 +114,15 @@ jobs:
             --tag fontebasso/php-nginx:latest \
             fontebasso/php-nginx:${RELEASE_VERSION}-amd64 \
             fontebasso/php-nginx:${RELEASE_VERSION}-arm64
-
           digest=$(docker buildx imagetools inspect fontebasso/php-nginx:${RELEASE_VERSION} --format '{{json .}}' | jq -r '.manifest.digest')
-          echo "digest=$digest"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          docker buildx sbom fontebasso/php-nginx:$digest --output sbom.spdx.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: sbom.spdx.json
+          name: sbom.spdx.json
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.8.1
@@ -92,3 +132,46 @@ jobs:
           COSIGN_EXPERIMENTAL: "1"
         run: |
           cosign sign --yes docker.io/fontebasso/php-nginx@${{ steps.push.outputs.digest }}
+
+  publish-assets:
+    name: Publish SBOM and Provenance to Release
+    needs: [ merge-multiarch ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Extract release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Download provenance from registry
+        run: |
+          cosign download attestation \
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
+            --output-file provenance.intoto.jsonl
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom.spdx.json
+
+      - name: Save digest to file
+        run: echo "${{ needs.merge-multiarch.outputs.digest }}" > digest.txt
+
+      - name: Generate checksums
+        run: |
+          sha256sum \
+            provenance.intoto.jsonl \
+            sbom.spdx.json \
+            digest.txt > checksums.txt
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            provenance.intoto.jsonl
+            sbom.spdx.json
+            digest.txt
+            checksums.txt

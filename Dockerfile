@@ -23,28 +23,26 @@ RUN set -eux; \
   ln -sf /bin/false /usr/bin/tar; \
   apk update; \
   apk add --no-cache \
-    bash \
-    runit \
     ca-certificates \
     curl \
     git \
-    tzdata \
+    libarchive-tools \
+    libedit \
     libevent \
     libzip \
-    libedit \
-    openssl \
-    zlib \
-    sqlite-libs \
     oniguruma \
-    libarchive-tools;
+    openssl \
+    runit \
+    sqlite-libs \
+    tzdata \
+    zlib;
 
-# --- Build NGINX ---
 RUN set -eux; \
   apk add --no-cache --virtual .build-nginx-deps \
     build-base \
+    openssl-dev \
     pcre2-dev \
-    zlib-dev \
-    openssl-dev; \
+    zlib-dev; \
   curl -fsSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o /tmp/nginx.tar.gz; \
   curl -fsSL https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v0.38.tar.gz -o /tmp/headers-more.tar.gz; \
   mkdir -p /tmp/nginx /tmp/headers-more-nginx-module-0.38; \
@@ -52,86 +50,88 @@ RUN set -eux; \
   bsdtar -xf /tmp/headers-more.tar.gz -C /tmp; \
   cd /tmp/nginx-${NGINX_VERSION}; \
   ./configure \
-    --prefix=/opt/nginx \
-    --with-http_ssl_module \
-    --with-http_gzip_static_module \
-    --with-http_stub_status_module \
-    --with-http_realip_module \
-    --with-threads \
-    --with-pcre \
     --add-module=/tmp/headers-more-nginx-module-0.38 \
-    --with-cc-opt='-O2 -fPIC' \
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
-    --http-log-path=/var/log/nginx/access.log; \
+    --http-log-path=/var/log/nginx/access.log \
+    --prefix=/opt/nginx \
+    --with-cc-opt='-O2 -fPIC' \
+    --with-http_gzip_static_module \
+    --with-pcre \
+    --with-http_realip_module \
+    --with-http_ssl_module \
+    --with-http_stub_status_module \
+    --with-threads; \
   make -j$(nproc); \
   make install; \
   ln -s /opt/nginx/sbin/nginx /usr/sbin/nginx; \
   apk del .build-nginx-deps; \
   rm -rf /tmp/nginx*
 
-# --- Build PHP ---
 RUN set -eux; \
   apk add --no-cache --virtual .build-php-deps \
+    abseil-cpp-dev \
     autoconf \
     bzip2-dev \
+    c-ares-dev \
     curl-dev \
-    libedit-dev \
-    libxml2-dev \
-    libpng-dev \
-    jpeg-dev \
     freetype-dev \
-    libsodium-dev \
+    g++ \
+    gcc \
+    jpeg-dev \
+    libedit-dev \
     libjpeg-turbo-dev \
+    libpng-dev \
+    libsodium-dev \
     libwebp-dev \
+    libxml2-dev \
     libxpm-dev \
     libzip-dev \
-    sqlite-dev \
-    openssl-dev \
-    zlib-dev \
-    bzip2-dev \
-    oniguruma-dev \
     linux-headers \
-    gcc \
-    g++ \
     make \
-    pkgconf; \
+    oniguruma-dev \
+    openssl-dev \
+    pkgconf \
+    re2-dev \
+    sqlite-dev \
+    zlib-dev; \
   curl -fsSL https://www.php.net/distributions/php-${PHP_VERSION}.tar.gz -o /tmp/php.tar.gz; \
   bsdtar -xf /tmp/php.tar.gz -C /tmp; \
   cd /tmp/php-${PHP_VERSION}; \
   ./configure \
-    --prefix=/opt/php \
+    --disable-cgi \
+    --disable-phpdbg \
+    --enable-bcmath \
+    --enable-calendar \
+    --enable-exif \
     --enable-fpm \
     --enable-gd \
-    --with-bz2 \
-    --with-freetype \
-    --with-jpeg \
-    --with-webp \
-    --with-xpm \
-    --with-png \
-    --with-openssl \
-    --with-zlib \
-    --with-curl \
-    --with-sodium \
-    --with-libedit \
     --enable-mbstring \
-    --enable-bcmath \
-    --enable-exif \
-    --enable-pcntl \
     --enable-opcache \
+    --enable-pcntl \
     --enable-pdo \
     --enable-shmop \
     --enable-sockets \
     --enable-sysvmsg \
     --enable-sysvsem \
     --enable-sysvshm \
-    --enable-calendar \
+    --prefix=/opt/php \
+    --with-bz2 \
+    --with-config-file-scan-dir=/opt/php/etc/php/conf.d \
+    --with-curl \
+    --with-freetype \
+    --with-jpeg \
+    --with-libedit \
+    --with-openssl \
     --with-pdo-mysql \
     --with-pdo-sqlite \
-    --with-config-file-scan-dir=/opt/php/etc/conf.d \
+    --with-pear \
+    --with-png \
+    --with-sodium \
+    --with-webp \
+    --with-xpm \
     --with-zip \
-    --disable-cgi \
-    --disable-phpdbg; \
+    --with-zlib; \
   make -j$(nproc); \
   make install; \
   cp sapi/fpm/php-fpm.conf /opt/php/etc/php-fpm.conf; \
@@ -140,9 +140,14 @@ RUN set -eux; \
   ln -s /opt/php/sbin/php-fpm /usr/sbin/php-fpm; \
   ln -s /opt/php/bin/php /usr/bin/php; \
   ln -s /opt/php/bin/phpize /usr/bin/phpize; \
-  ln -s /opt/php/bin/pecl /usr/bin/pecl; \
   ln -s /opt/php/bin/php-config /usr/bin/php-config; \
-  mkdir -p /opt/php/etc/conf.d; \
+  mkdir -p /opt/php/etc/php/conf.d; \
+  printf "\n" | /opt/php/bin/pecl install grpc; \
+  echo "extension=grpc.so" > /opt/php/etc/php/conf.d/php-02-grpc.ini; \
+  rm -rf /opt/php/bin/pecl /opt/php/bin/pear /opt/php/bin/peardev /opt/php/bin/peclcmd.php /opt/php/bin/pearcmd.php /opt/php/bin/phar /opt/php/bin/phar.phar; \
+  find /opt/php -type f -name "peclcmd.php" -delete; \
+  find /opt/php -type f -name "pearcmd.php" -delete; \
+  find /opt/php -type d -name "pear" -exec rm -rf {} +; \
   apk del .build-php-deps; \
   rm -rf /tmp/php*
 
@@ -151,24 +156,23 @@ COPY ./custom_params.ini /opt/php/etc/conf.d/php-03-custom-params.ini
 
 RUN set -eux; \
   apk add --no-cache \
+    freetype \
     libgomp \
     libheif \
-    openjpeg \
-    librsvg \
-    libsodium \
-    libraw \
-    libwmf \
-    libxml2 \
-    sqlite-libs \
-    libzip \
-    freetype \
     libjpeg-turbo \
     libpng \
+    libraw \
+    librsvg \
+    libsodium \
     libwebp \
+    libwmf \
+    libxml2 \
     libxpm \
+    libzip \
     oniguruma \
-    libarchive-tools; \
-  apk del bash; \
+    openjpeg \
+    libarchive-tools \
+    sqlite-libs; \
   touch /env; \
   chmod +x \
     /sbin/runit-wrapper \
@@ -183,6 +187,7 @@ RUN set -eux; \
     /app /env /etc/service /opt/nginx /var/log/nginx /opt/php /tmp /run/nginx
 
 USER www-data
+
 WORKDIR /app
 
 EXPOSE 80
