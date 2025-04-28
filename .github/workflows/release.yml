@@ -125,39 +125,3 @@ jobs:
           COSIGN_EXPERIMENTAL: "1"
         run: |
           cosign sign --yes docker.io/fontebasso/php-nginx@${{ steps.push.outputs.digest }}
-
-  publish-assets:
-    name: Publish SBOM and Provenance to Release
-    needs: [ merge-multiarch ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Extract release version
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.8.1
-
-      - name: Download provenance from registry
-        run: |
-          cosign download attestation \
-            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
-            --output-file provenance.intoto.jsonl
-
-      - name: Save digest to file
-        run: echo "${{ needs.merge-multiarch.outputs.digest }}" > digest.txt
-
-      - name: Generate checksums
-        run: |
-          sha256sum \
-            provenance.intoto.jsonl \
-            digest.txt > checksums.txt
-
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            provenance.intoto.jsonl
-            digest.txt
-            checksums.txt
