@@ -176,7 +176,7 @@ jobs:
           cosign attest --yes \
             --predicate sbom.spdx.json \
             --type https://spdx.dev/Document \
-            docker.io/fontebasso/php-nginx:${{ needs.merge-multiarch.outputs.digest }}
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
 
   generate-provenance:
     name: Generate SLSA Provenance
