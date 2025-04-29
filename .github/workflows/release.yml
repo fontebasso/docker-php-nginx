@@ -146,6 +146,9 @@ jobs:
         with:
           name: sbom.spdx.json
           path: sbom.spdx.json
+    permissions:
+      actions: read
+      contents: write
 
   attest-sbom:
     name: Attest SBOM
