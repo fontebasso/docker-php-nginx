@@ -125,3 +125,106 @@ jobs:
           COSIGN_EXPERIMENTAL: "1"
         run: |
           cosign sign --yes docker.io/fontebasso/php-nginx@${{ steps.push.outputs.digest }}
+
+  generate-sbom:
+    name: Generate SBOM
+    needs: merge-multiarch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom.spdx.json
+          path: sbom.spdx.json
+
+  attest-sbom:
+    name: Attest SBOM
+    needs: [merge-multiarch, generate-sbom]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom.spdx.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Attest SBOM with Cosign (OIDC keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign attest --yes \
+            --predicate sbom.spdx.json \
+            --type https://spdx.dev/Document \
+            docker.io/fontebasso/php-nginx:${{ needs.merge-multiarch.outputs.digest }}
+
+  generate-provenance:
+    name: Generate SLSA Provenance
+    needs: merge-multiarch
+    if: startsWith(github.ref, 'refs/tags/')
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: docker.io/fontebasso/php-nginx
+      digest: ${{ needs.merge-multiarch.outputs.digest }}
+    secrets:
+      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      actions: read
+
+  release:
+    needs: [attest-sbom, generate-provenance]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom.spdx.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Download Provenance attestation
+        run: |
+          cosign download attestation \
+            docker.io/fontebasso/php-nginx@${{ needs.merge-multiarch.outputs.digest }} \
+            --output-file provenance.intoto.jsonl
+
+      - name: Generate checksum.txt
+        run: |
+          sha256sum sbom.spdx.json provenance.intoto.jsonl > checksum.txt
+
+      - name: Sign checksum.txt with Cosign (OIDC keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign-blob --yes --output-signature checksum.txt.sig checksum.txt
+
+      - name: Upload Provenance, SBOM, and Checksum (signed) to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sbom.spdx.json
+            provenance.intoto.jsonl
+            checksum.txt
+            checksum.txt.sig
+        continue-on-error: false
