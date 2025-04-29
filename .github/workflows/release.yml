@@ -198,6 +198,8 @@ jobs:
   release:
     needs: [attest-sbom, generate-provenance]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download SBOM artifact
         uses: actions/download-artifact@v4
