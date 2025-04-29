@@ -196,7 +196,8 @@ jobs:
       actions: read
 
   release:
-    needs: [attest-sbom, generate-provenance]
+    name: Release
+    needs: [merge-multiarch, attest-sbom, generate-provenance]
     runs-on: ubuntu-latest
     permissions:
       contents: write
