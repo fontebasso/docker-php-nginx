@@ -196,7 +196,7 @@ jobs:
       actions: read
 
   release:
-    name: Release
+    name: Release Files
     needs: [merge-multiarch, attest-sbom, generate-provenance]
     runs-on: ubuntu-latest
     permissions:
@@ -206,6 +206,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: sbom.spdx.json
+
+      - uses: fontebasso/generate-licenses-md-from-sbom@v1
+        with:
+          sbom-file: sbom.spdx.json
+          output-file: LICENSES.md
+          overrides: |
+            nginx=BSD-2-Clause
+            php-cli=PHP-3.01
+            php-fpm=PHP-3.01
+            fontebasso/php-nginx=MIT
+            *******/php-nginx=MIT
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.8.1
@@ -218,7 +229,7 @@ jobs:
 
       - name: Generate checksum.txt
         run: |
-          sha256sum sbom.spdx.json provenance.intoto.jsonl > checksum.txt
+          sha256sum sbom.spdx.json provenance.intoto.jsonl LICENSES.md > checksum.txt
 
       - name: Sign checksum.txt with Cosign (OIDC keyless)
         env:
@@ -234,4 +245,5 @@ jobs:
             provenance.intoto.jsonl
             checksum.txt
             checksum.txt.sig
+            LICENSES.md
         continue-on-error: false
