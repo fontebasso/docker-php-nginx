@@ -13,7 +13,7 @@ This repository contains a Docker image for running high-performance PHP web app
 ## Features
 
 - **Alpine Linux 3.20:** Minimal base for better security and smaller footprint.
-- **PHP 8.3:** Modern version with performance improvements and long-term support.
+- **PHP 8.3:** Modern version with performance improvements and extended support timeline.
 - **Nginx:** Fast and reliable web server.
 - **Runit:** Lightweight init system for process supervision.
 - **Multi-arch builds:** Supports linux/amd64 and linux/arm64.
