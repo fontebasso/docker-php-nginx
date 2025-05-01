@@ -32,7 +32,7 @@ To verify the image and its provenance (example):
 cosign verify \
   --certificate-identity-regexp "github.com/fontebasso/.+" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-  docker.io/fontebasso/php-nginx@sha256:172b4099efe5133aa45ce8758713661006c4192c9034a343267ee4ed6521ac79
+  docker.io/fontebasso/php-nginx@sha256:03c339da2342dd29c04a4c20da486150efc38f93a3aaf675fdf7a08899d8cb56
 ```
 
 ```bash
@@ -40,7 +40,7 @@ cosign verify-attestation \
   --type=https://slsa.dev/provenance/v0.2 \
   --certificate-identity-regexp "github.com/slsa-framework/.+" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-  docker.io/fontebasso/php-nginx@sha256:172b4099efe5133aa45ce8758713661006c4192c9034a343267ee4ed6521ac79
+  docker.io/fontebasso/php-nginx@sha256:03c339da2342dd29c04a4c20da486150efc38f93a3aaf675fdf7a08899d8cb56
 ```
 
 No manual setup or keys required — Cosign uses GitHub Actions identity.
