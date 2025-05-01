@@ -74,14 +74,13 @@ This will expose Nginx on port 8080 of your local machine.
 You can customize the PHP configuration by editing the custom_params.ini file and copying it to the appropriate directory:
 
 ```dockerfile
-COPY ./custom_params.ini /usr/local/etc/php/conf.d/docker-php-ext-x-03-custom-params.ini
+COPY ./custom_params.ini /opt/php/etc/conf.d/php-04-custom-params.ini
 ```
 
 ### Directory Structure
 
 - `/app`: The application code.
 - `/env`: Environment variables directory.
-- `/var/log/nginx`: Nginx logs.
 - `/etc/service`: Runit service definitions.
 
 ## Development
