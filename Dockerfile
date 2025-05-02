@@ -152,7 +152,7 @@ RUN set -eux; \
   rm -rf /tmp/php*
 
 COPY ./src /
-COPY ./custom_params.ini /opt/php/etc/conf.d/php-03-custom-params.ini
+COPY ./custom_params.ini /opt/php/etc/php/conf.d/php-03-custom-params.ini
 
 RUN set -eux; \
   apk add --no-cache \
