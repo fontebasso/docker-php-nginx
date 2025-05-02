@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 [ -f /env ] && . /env 2>/dev/null
-exec /usr/sbin/nginx -g 'daemon off;' >/dev/null
+exec /usr/sbin/nginx -g 'daemon off;'

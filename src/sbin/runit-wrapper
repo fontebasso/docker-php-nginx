@@ -5,7 +5,7 @@ main() {
   trap on_term TERM INT
   trap on_usr1 USR1
   trap on_hup  HUP
-  /sbin/runsvdir-start >/dev/null &
+  /sbin/runsvdir-start &
   runsv_pid=$!
   while kill -0 "$runsv_pid" 2>/dev/null; do
     sleep 1
