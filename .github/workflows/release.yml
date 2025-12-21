@@ -50,7 +50,7 @@ jobs:
         id: versions
         run: |
           alpine_version=$(curl -s https://alpinelinux.org/downloads/ | grep -oP 'Current Alpine Version <strong>\K[0-9]+\.[0-9]+\.[0-9]+')
-          php_version=$(curl -s "https://www.php.net/releases/index.php?json&version=8.3" | jq -r '.version')
+          php_version=$(curl -s "https://www.php.net/releases/index.php?json&version=8.4" | jq -r '.version')
           nginx_version=$(curl -s https://nginx.org/en/CHANGES | grep -m1 -oP 'Changes with nginx \K[0-9]+\.[0-9]+\.[0-9]+')
           [ -z "$alpine_version" ] && { echo "Error: empty alpine_version"; exit 1; }
           [ -z "$php_version" ] && { echo "Error: empty php_version"; exit 1; }
