@@ -3,7 +3,6 @@ ARG PHP_VERSION=8.4.16
 ARG NGINX_VERSION=1.29.4
 
 FROM alpine:${ALPINE_VERSION} AS builder
-ARG ALPINE_VERSION
 ARG PHP_VERSION
 ARG NGINX_VERSION
 
@@ -15,18 +14,15 @@ RUN set -eux; \
     curl \
     git \
     libarchive-tools \
-    libedit \
-    libevent \
-    libzip \
-    oniguruma \
-    openssl \
-    sqlite-libs \
     tzdata \
-    zlib;
+    zlib \
+    openssl \
+    sqlite-libs
 
 RUN set -eux; \
   apk add --no-cache --virtual .build-nginx-deps \
     build-base \
+    binutils \
     openssl-dev \
     pcre2-dev \
     zlib-dev; \
@@ -51,7 +47,7 @@ RUN set -eux; \
     --with-threads; \
   make -j$(nproc); \
   make install; \
-  ln -s /opt/nginx/sbin/nginx /usr/sbin/nginx; \
+  strip /opt/nginx/sbin/nginx || true; \
   rm -rf /tmp/nginx*; \
   apk del .build-nginx-deps
 
@@ -59,6 +55,7 @@ RUN set -eux; \
   apk add --no-cache --virtual .build-php-deps \
     abseil-cpp-dev \
     autoconf \
+    binutils \
     bzip2-dev \
     c-ares-dev \
     curl-dev \
@@ -125,6 +122,8 @@ RUN set -eux; \
   cp sapi/fpm/www.conf /opt/php/etc/php-fpm.d/www.conf; \
   cp php.ini-production /opt/php/lib/php.ini; \
   mkdir -p /opt/php/etc/php/conf.d; \
+  export PHPIZE=/opt/php/bin/phpize; \
+  export PHP_CONFIG=/opt/php/bin/php-config; \
   printf "\n" | /opt/php/bin/pecl install grpc; \
   echo "extension=grpc.so" > /opt/php/etc/php/conf.d/php-02-grpc.ini; \
   strip /opt/php/bin/php || true; \
