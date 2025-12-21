@@ -128,6 +128,8 @@ RUN set -eux; \
     --with-openssl \
     --with-pdo-mysql \
     --with-pdo-sqlite \
+    --with-pear \
+    --with-png \
     --with-sodium \
     --with-webp \
     --with-xpm \
