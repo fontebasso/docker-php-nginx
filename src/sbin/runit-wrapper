@@ -1,24 +1,49 @@
 #!/bin/sh
+set -eu
 
 main() {
-  export > /env 2>/dev/null
+  export > /env 2>/dev/null || true
+
   trap on_term TERM INT
   trap on_usr1 USR1
-  trap on_hup  HUP
+  trap on_hup HUP
+
   /sbin/runsvdir-start &
   runsv_pid=$!
-  while kill -0 "$runsv_pid" 2>/dev/null; do
-    sleep 1
-  done
-  exit 1
+
+  wait "$runsv_pid"
+  exit $?
 }
 
 on_term() {
-  sv down /etc/service/nginx >/dev/null 2>&1
-  sv down /etc/service/php-fpm >/dev/null 2>&1
-  while sv status /etc/service/nginx 2>/dev/null | grep -q '^run'; do sleep 0.2; done
-  while sv status /etc/service/php-fpm 2>/dev/null | grep -q '^run'; do sleep 0.2; done
-  kill "$runsv_pid"
+  trap '' TERM INT
+
+  sv down /etc/service/nginx >/dev/null 2>&1 || true
+  sv down /etc/service/php-fpm >/dev/null 2>&1 || true
+
+  wait_service_down /etc/service/nginx 15
+  wait_service_down /etc/service/php-fpm 15
+
+  kill "$runsv_pid" 2>/dev/null || true
+  wait "$runsv_pid" 2>/dev/null || true
+
+  exit 0
+}
+
+wait_service_down() {
+  service="$1"
+  timeout="$2"
+  elapsed=0
+
+  while sv status "$service" 2>/dev/null | grep -q '^run'; do
+    if [ "$elapsed" -ge "$timeout" ]; then
+      echo "⚠️ timeout waiting $service to stop" >&2
+      break
+    fi
+
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
 }
 
 on_usr1() {
@@ -27,7 +52,7 @@ on_usr1() {
 }
 
 on_hup() {
-  sv hup /etc/service/nginx >/dev/null 2>&1
+  sv hup /etc/service/nginx >/dev/null 2>&1 || echo "⚠️ nginx hup failed" >&2
 }
 
 main "$@"
