@@ -110,7 +110,6 @@ RUN set -eux; \
     --enable-fpm \
     --enable-gd \
     --enable-mbstring \
-    --enable-opcache \
     --enable-pcntl \
     --enable-pdo \
     --enable-shmop \
