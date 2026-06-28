@@ -1,6 +1,6 @@
 # fontebasso/php-nginx
 
-[![Docker Build](https://github.com/fontebasso/docker-php-nginx/workflows/docker/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions?query=workflow%3Adocker)
+[![Docker Image Release](https://github.com/fontebasso/docker-php-nginx/actions/workflows/release.yml/badge.svg)](https://github.com/fontebasso/docker-php-nginx/actions/workflows/release.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/fontebasso/php-nginx)](https://hub.docker.com/r/fontebasso/php-nginx)
 [![Signed with Sigstore](https://img.shields.io/badge/sigstore-signed-blue?logo=sigstore)](https://www.sigstore.dev)
 [![SLSA Provenance](https://img.shields.io/badge/provenance-SLSA%20attested-green)](https://slsa.dev)
