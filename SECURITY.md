@@ -7,14 +7,9 @@ effort to acknowledge your contributions.
 
 | Version | Supported       |
 |---------| --------------- |
-| 1+      | :x: |
-| 2+      | :x: |
-| 3+      | :x: |
-| 4+      | :x: |
-| 5+      | :x: |
-| 6+      | :x: |
-| 7+      | :heavy_check_mark: |
-| 8+      | :heavy_check_mark: |
+| 8+      | :x: |
+| 9+      | :heavy_check_mark: |
+| 10+     | :heavy_check_mark: |
 
 ## Reporting a Vulnerability
 
