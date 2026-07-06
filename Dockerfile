@@ -32,7 +32,6 @@ RUN set -eux; \
     libzip \
     oniguruma \
     openssl \
-    runit \
     sqlite-libs \
     tzdata \
     zlib;
@@ -178,19 +177,16 @@ RUN set -eux; \
     libarchive-tools \
     sqlite-libs; \
   touch /env; \
-  chmod +x \
-    /sbin/runit-wrapper \
-    /sbin/runsvdir-start \
-    /etc/service/*/run; \
+  chmod +x /sbin/entrypoint; \
   adduser -S www-data -G www-data; \
   mkdir -p \
     /run/nginx \
     /var/log/nginx \
     /opt/nginx/client_body_temp; \
   chown -R www-data:www-data \
-    /app /env /etc/service /opt/nginx /var/log/nginx /opt/php /tmp /run/nginx
+    /app /env /opt/nginx /var/log/nginx /opt/php /tmp /run/nginx
 
 USER www-data
 WORKDIR /app
 EXPOSE 80
-CMD ["/sbin/runit-wrapper"]
+CMD ["/sbin/entrypoint"]

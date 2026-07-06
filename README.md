@@ -16,7 +16,7 @@ This repository contains a Docker image for running high-performance PHP web app
 - **PHP 8.5:** Modern version with performance improvements and extended support timeline.
 - **OPcache in core:** As of PHP 8.5, OPcache is part of the PHP core — no separate extension is installed or loaded. JIT is disabled by default in this image.
 - **Nginx:** Fast and reliable web server.
-- **Runit:** Lightweight init system for process supervision.
+- **Graceful shutdown:** Minimal shell entrypoint propagates SIGTERM correctly — nginx drains connections (`-s quit`) and php-fpm finishes in-flight requests before exiting.
 - **Multi-arch builds:** Supports linux/amd64 and linux/arm64.
 
 ## Supply Chain Security

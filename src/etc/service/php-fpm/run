@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-[ -f /env ] && . /env 2>/dev/null
-exec php-fpm --nodaemonize
