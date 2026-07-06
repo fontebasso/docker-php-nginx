@@ -146,6 +146,8 @@ RUN set -eux; \
   mkdir -p /opt/php/etc/php/conf.d; \
   printf "\n" | /opt/php/bin/pecl install grpc; \
   echo "extension=grpc.so" > /opt/php/etc/php/conf.d/php-02-grpc.ini; \
+  printf "\n" | /opt/php/bin/pecl install opentelemetry; \
+  echo "extension=opentelemetry.so" > /opt/php/etc/php/conf.d/php-02-opentelemetry.ini; \
   rm -rf /opt/php/bin/pecl /opt/php/bin/pear /opt/php/bin/peardev /opt/php/bin/peclcmd.php /opt/php/bin/pearcmd.php /opt/php/bin/phar /opt/php/bin/phar.phar; \
   find /opt/php -type f -name "peclcmd.php" -delete; \
   find /opt/php -type f -name "pearcmd.php" -delete; \
