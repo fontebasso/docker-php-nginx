@@ -12,8 +12,9 @@ This repository contains a Docker image for running high-performance PHP web app
 
 ## Features
 
-- **Alpine Linux 3.20:** Minimal base for better security and smaller footprint.
-- **PHP 8.3:** Modern version with performance improvements and extended support timeline.
+- **Alpine Linux 3.23:** Minimal base for better security and smaller footprint.
+- **PHP 8.5:** Modern version with performance improvements and extended support timeline.
+- **OPcache in core:** As of PHP 8.5, OPcache is part of the PHP core — no separate extension is installed or loaded. JIT is disabled by default in this image.
 - **Nginx:** Fast and reliable web server.
 - **Runit:** Lightweight init system for process supervision.
 - **Multi-arch builds:** Supports linux/amd64 and linux/arm64.
